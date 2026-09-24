@@ -1,0 +1,52 @@
+# 合成演示数据；仅这些定义和分析视图可进入模型上下文。
+timezone: Asia/Shanghai
+date_interval: "[start, end)"
+currency: CNY
+join_rule: "sales_lines 与 refund_events 必须先按相同维度分别聚合，再关联；禁止原始明细直接 JOIN 退款事件。"
+metrics:
+  paid_amount:
+    label: 实付金额
+    definition: 支付时间在期间内的成功支付明细实付金额之和
+    grain: 支付明细
+    unit: fen
+    time_field: paid_at
+    view: analytics.sales_lines
+    dimensions: [day, channel, category]
+  successful_refund:
+    label: 成功退款金额
+    definition: 完成时间在期间内的成功退款事件金额之和，沿用原订单渠道与商品类别
+    grain: 退款事件
+    unit: fen
+    time_field: completed_at
+    view: analytics.refund_events
+    dimensions: [day, channel, category]
+  period_net_receipt:
+    label: 期间净收款
+    definition: 同期实付金额减同期成功退款金额；本期退款可以来自上期订单，不是会计收入
+    grain: 收退款事件
+    unit: fen
+    time_field: occurred_at
+    view: analytics.cash_events
+    dimensions: [day, channel, category]
+  paid_order_count:
+    label: 支付订单数
+    definition: 期间内成功支付订单 ID 去重计数；按类别分组时每类独立去重，类间不可相加
+    grain: 去重订单
+    unit: orders
+    time_field: paid_at
+    view: analytics.sales_lines
+    dimensions: [day, channel, category]
+  average_order_value:
+    label: 客单价
+    definition: 同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价
+    grain: 聚合后指标
+    unit: fen_per_order
+    time_field: paid_at
+    view: analytics.sales_lines
+    dimensions: [day, channel, category]
+rules:
+  - 所有时间先按 Asia/Shanghai 解释，再转换为 timestamptz 边界。
+  - 不得将支付和退款按原订单月份合并；退款以实际完成日期计入。
+  - 金额为整数分，展示时除以 100；百分比的基期为零时返回不可计算。
+  - 分组订单数不能跨组相加；一单跨类别会在两个类别分别计数。
+  - 仅公开 analytics.sales_lines、analytics.refund_events、analytics.cash_events。

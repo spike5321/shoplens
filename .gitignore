@@ -1,0 +1,53 @@
+# ============================================================
+# ShopLens .gitignore
+# 原则：绝不提交密钥、真实 .env、本地数据库数据、构建产物
+# ============================================================
+
+# --- 密钥与环境（最重要） ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- 本地运行时依赖（PostgreSQL 二进制、数据目录、下载缓存）---
+.local/
+.workbuddy/
+.agents/
+.codex/
+# 本地 PostgreSQL 数据目录若放在别处，也一并忽略
+pgdata/
+*.pgdata/
+
+# --- 前端 ---
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# --- 日志与临时文件 ---
+*.log
+logs/
+tmp/
+.tmp/
+
+# --- 编辑器 / 系统 ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- 评测原始结果（体积大，按需提交汇总）---
+evals/runs/**/raw/**

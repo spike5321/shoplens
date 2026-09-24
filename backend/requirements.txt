@@ -1,0 +1,42 @@
+# ShopLens 后端顶层依赖
+#
+# 版本为 2026-09-24 在本机实测可用并已安装（Python 3.13.12，Windows）。
+# 完整依赖树（含间接依赖）见 requirements.lock.txt —— 那是可复现构建的唯一依据。
+#
+# 安装：
+#   python -m pip install -r backend/requirements.txt
+
+# --- Web 框架 ---
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
+
+# --- 数据校验与配置 ---
+pydantic==2.13.5
+pydantic-settings==2.15.0
+
+# --- 数据库 ---
+sqlalchemy==2.0.54
+alembic==1.20.0
+psycopg[binary]==3.3.6
+
+# --- LangChain / LangGraph ---
+langchain==1.4.2
+langchain-core==1.6.4
+langgraph==1.2.12
+langgraph-checkpoint-postgres==3.1.2
+# 模型适配器：默认真实服务商 DeepSeek；langchain-openai 备用（任意 OpenAI 兼容端点）
+langchain-deepseek==1.1.1
+langchain-openai==1.6.6
+
+# --- SQL 解析（阶段 2 的 AST 校验）---
+sqlglot==30.19.0
+
+# --- HTTP 客户端与工具 ---
+httpx==0.28.1
+python-dotenv==1.2.3
+PyYAML==6.0.3
+
+# --- 测试与静态检查 ---
+pytest==9.1.1
+pytest-asyncio==1.4.0
+ruff==0.16.8

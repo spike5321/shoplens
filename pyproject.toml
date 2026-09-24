@@ -1,0 +1,40 @@
+[project]
+name = "shoplens"
+version = "0.1.0"
+description = "基于 LangChain + LangGraph 的电商经营数据分析助手（合成演示数据）"
+requires-python = ">=3.12"
+
+# 依赖的单一事实来源是 backend/requirements.txt 与 backend/requirements.lock.txt。
+# 这里不重复声明，避免两处漂移。
+
+[tool.pytest.ini_options]
+# backend/ 加进 import 路径，测试里可以直接 `import app`
+pythonpath = ["backend"]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "integration: 需要真实 PostgreSQL 的测试（阶段 1/2 起大量使用）",
+    "slow: 运行较慢的测试",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = [".venv", ".local", "frontend", "node_modules"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",  # 行长由 formatter 处理，中文注释容易超
+    # 本项目注释、文档字符串和提示文本都用中文，全角标点是刻意为之，
+    # RUF001/002/003 的「疑似混淆字符」告警在这里全是噪音。
+    "RUF001",
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.isort]
+# `app` 是本项目自己的包（backend/app），`conftest` 是测试自带的辅助模块。
+# 不显式声明的话，ruff 会把它们当第三方包，跟 fastapi/pytest 混在同一段，
+# 既不便于阅读，也让导入顺序随启发式规则漂移。
+known-first-party = ["app", "conftest"]
