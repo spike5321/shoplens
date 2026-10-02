@@ -645,3 +645,5 @@ python scripts/smoke_query_graph.py --real-model
 ### 交给阶段 4
 
 复用 `QueryService.start/read/resume`、类型化计划/图表及 PostgreSQL saver。HTTP 层从安全随机服务端会话取得 owner，不能接受浏览器自报 owner 或 thread_id；添加应用 runs/events/sessions 元数据和历史读取，限制单进程并发，启动时标记失去执行者的 running 任务为 interrupted。已完成结果和等待澄清任务可利用现有 checkpoint，仍需真实浏览器、两个独立会话及完整服务重启验收。真实模型验证待本机 Key 配置后显式执行。
+
+提交与推送：阶段 3 实现及验收文档提交为 `ea0fb02`（`feat: add LangGraph query flow and PostgreSQL checkpoints`）；`git push origin main` 成功，远端从 `91a7c4e` 更新到 `ea0fb02`。本段回执随后单独提交。
