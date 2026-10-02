@@ -294,12 +294,19 @@ class QueryService:
         return {"configurable": {"thread_id": f"shoplens:{run_id}"}, "recursion_limit": 35}
 
     def start(self, question: str, *, owner_id: str) -> dict[str, Any]:
+        initial = self.initial_state(question, owner_id=owner_id)
+        self.graph.invoke(initial, self.config(initial["run_id"]))
+        return self.read(initial["run_id"], owner_id=owner_id)
+
+    def initial_state(self, question: str, *, owner_id: str, run_id: str | None = None) -> dict:
+        """服务端创建元数据后可提供自己的随机 run_id；不用于浏览器输入。"""
         if not isinstance(question, str) or not 1 <= len(question.strip()) <= 2000:
             raise ValueError("invalid_question")
         if not owner_id or len(owner_id) > 128:
             raise ValueError("invalid_owner")
-        run_id = uuid.uuid4().hex
-        initial = {
+        run_id = run_id or uuid.uuid4().hex
+        self.config(run_id)
+        return {
             "owner_id": owner_id,
             "run_id": run_id,
             "question": question.strip(),
@@ -318,8 +325,6 @@ class QueryService:
             "error_code": None,
             "events": [],
         }
-        self.graph.invoke(initial, self.config(run_id))
-        return self.read(run_id, owner_id=owner_id)
 
     def read(self, run_id: str, *, owner_id: str) -> dict:
         snapshot = self.graph.get_state(self.config(run_id))

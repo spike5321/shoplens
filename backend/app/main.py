@@ -1,4 +1,4 @@
-"""ShopLens FastAPI 应用入口（阶段 0：只有健康检查，无业务功能）。
+"""ShopLens FastAPI 入口：运维探针与阶段 4 查询工作台。
 
 两个探针刻意分开：
 
@@ -20,12 +20,24 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
 from .config import get_settings
+from .workspace import lifespan, router
 
 app = FastAPI(
     title="ShopLens API",
     description="基于 LangChain + LangGraph 的电商经营数据分析助手（合成演示数据）",
     version=__version__,
+    lifespan=lifespan,
 )
+app.include_router(router)
+
+
+@app.middleware("http")
+async def private_responses(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
 
 # 前端开发服务器默认 5173；`npm run preview`（看构建产物）默认 4173。
 # 阶段 0 只放行这两个本地来源。

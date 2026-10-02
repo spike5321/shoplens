@@ -7,6 +7,7 @@ Exit codes: 0 = all requested checks passed; 1 = at least one check failed;
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -63,7 +64,10 @@ def run(name: str, command: list[str], *, cwd: Path = ROOT, env=None) -> Result:
     tail = "\n".join(output.splitlines()[-12:])
     if completed.returncode == 0:
         return Result(name, "PASS", tail)
-    if name in {"Real model smoke", "Real graph smoke"} and completed.returncode == 2:
+    if (
+        name in {"Real model smoke", "Real graph smoke", "PostgreSQL browser workspace"}
+        and completed.returncode == 2
+    ):
         return Result(name, "NOT_RUN", tail)
     return Result(name, "FAIL", f"exit code {completed.returncode}\n{tail}")
 
@@ -110,7 +114,8 @@ def main() -> int:
         run("Offline model protocol stub", [PYTHON, "scripts/smoke_real_model.py", "--stub"]),
     ]
 
-    if args.skip_postgres or not postgres_available():
+    postgres_ready = not args.skip_postgres and postgres_available()
+    if not postgres_ready:
         reason = (
             "explicit --skip-postgres"
             if args.skip_postgres
@@ -139,9 +144,23 @@ def main() -> int:
     else:
         results.append(run("Frontend build", [npm, "run", "build"], cwd=ROOT / "frontend"))
 
-    if args.real_model:
-        import os
+    if not postgres_ready:
+        results.append(Result("PostgreSQL browser workspace", "NOT_RUN", reason))
+    elif npm is None:
+        results.append(Result("PostgreSQL browser workspace", "NOT_RUN", "npm unavailable"))
+    else:
+        env = os.environ.copy()
+        env["SHOPLENS_TEST_PYTHON"] = PYTHON
+        results.append(
+            run(
+                "PostgreSQL browser workspace",
+                [npm, "run", "test:e2e"],
+                cwd=ROOT / "frontend",
+                env=env,
+            )
+        )
 
+    if args.real_model:
         env = os.environ.copy()
         env["SHOPLENS_MODEL_PROVIDER"] = "deepseek"
         results.append(run("Real model smoke", [PYTHON, "scripts/smoke_real_model.py"], env=env))

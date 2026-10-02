@@ -647,3 +647,72 @@ python scripts/smoke_query_graph.py --real-model
 复用 `QueryService.start/read/resume`、类型化计划/图表及 PostgreSQL saver。HTTP 层从安全随机服务端会话取得 owner，不能接受浏览器自报 owner 或 thread_id；添加应用 runs/events/sessions 元数据和历史读取，限制单进程并发，启动时标记失去执行者的 running 任务为 interrupted。已完成结果和等待澄清任务可利用现有 checkpoint，仍需真实浏览器、两个独立会话及完整服务重启验收。真实模型验证待本机 Key 配置后显式执行。
 
 提交与推送：阶段 3 实现及验收文档提交为 `ea0fb02`（`feat: add LangGraph query flow and PostgreSQL checkpoints`）；`git push origin main` 成功，远端从 `91a7c4e` 更新到 `ea0fb02`。本段回执随后单独提交。
+
+---
+
+## 阶段 4：HTTP 工作台、会话与持久化
+
+实现与验收日期：2026-10-02。工作台、离线查询流程、真实 PostgreSQL 及 Windows/Edge 浏览器验收通过。阶段 3/4 的真实模型验证仍待本机 Key，阶段 5 评测尚未开始。
+
+### 已实现行为与关键文件
+
+- `backend/migrations/versions/0003_workspace.py`：app_state 的 sessions/runs/events、状态约束、会话历史索引、事件唯一序号；`scripts/setup_db.py` 迁移后只给 app 状态表 DML，reader 仍只能读 analytics。checkpoint 保持官方 saver 管理。
+- `backend/app/workspace.py`：服务端随机匿名 Cookie、哈希存储、7 天会话、CSRF/Origin 校验、全部操作的 owner 约束；创建/读取/澄清/历史/重试接口。澄清按 owner、状态、revision、24 小时有效期原子 UPDATE，重复或过期返回 409；客户端额外 owner/thread_id 被请求模型拒绝。
+- lifespan 创建 app 连接池、reader 执行器、两项并发的工作线程及 PostgreSQL advisory lock。第二个 API 进程不能启动；容量已满返回 429。启动时把遗留 running 改为 interrupted，不自动续跑。运行时从 LangGraph stream 保存节点快照/事件，只有图已结束或 interrupt 才发布完成、失败或待澄清。
+- `backend/app/query_graph.py` 增加内部初始状态构造，允许 HTTP 元数据先登记服务端随机 run_id；原有 CLI start/read/resume 保持兼容。每个工作线程独立创建 PostgreSQL saver，模型 SQL 仍只经过 QueryExecutor 的 reader 查询流程。
+- `frontend/src/App.tsx`、`api.ts`、`Chart.tsx`、`styles.css`：查询输入、示例、合成/模型/参考日期、指标口径、金额卡片、精确表格、按需加载的条形/折线图、期间比较、澄清、错误/重试、SQL/节点轨迹和历史。650 ms 短轮询与 URL 中的 run 实现刷新读取；连接错误 2 秒后重试；StrictMode 共用建会话 Promise。
+- 数据覆盖不是硬编码成 9 月末：通过受限 reader 查询计算实际现金事件的日期范围，当前种子覆盖 `[2026-07-01, 2026-10-25)`，保留 10 月边界与跨期退款；业务参考日期仍为 2026-09-30。表格/卡片以 BigInt 格式化十进制分，图表取同一结果，绘制坐标用 JS 数值，不运行模型 JS。
+- `tests/test_stage4_workspace.py`：四项真实数据库测试，覆盖 Cookie/访问隔离、CSRF/Origin/请求字段、并发重复澄清只领取一次、过期澄清、失败/拒绝、有限并发、单进程锁和 reader 不能访问三张状态表。
+- `frontend/e2e/workspace.spec.ts`：一条完整真实浏览器验收，覆盖正常/日趋势/期间比较/澄清/失败/拒绝/刷新/历史、两个独立 context 的越权拒绝、重复澄清及两次真正的后端进程终止/重启。`scripts/browser_fixture.py` 锁真实业务表让查询正在执行，杀死后端后释放锁，重新启动确认 interrupted，再通过重试得到新的成功 run。清理只针对测试 Cookie 对应会话，Cookie 经 stdin 传入，不落日志/命令行。
+
+### 实际命令与结果
+
+```text
+.\.venv\Scripts\python.exe scripts/setup_db.py
+  0003_workspace 迁移与 app 状态表授权成功；未重新灌入或更改业务数据
+npm install --save-exact echarts@6.1.0
+npm install --save-dev --save-exact @playwright/test@1.63.0
+npm install --save-dev --save-exact @types/node@26.6.4
+npm install --save-dev --save-exact prettier@3.9.9
+  依赖分别安装并更新 package-lock；版本固定
+.\.venv\Scripts\python.exe -m pytest tests/test_stage4_workspace.py -q -p no:cacheprovider
+  4 项真实 PostgreSQL 测试通过
+npm run test:e2e
+  Windows/Edge 无头：1 条完整浏览器流程通过（首轮约 26 秒）
+.\.venv\Scripts\python.exe scripts/verify.py
+  最终验收 PASS=9 FAIL=0 NOT_RUN=2，退出码 0
+  离线 pytest 87 项、真实 PostgreSQL pytest 13 项全部通过（共 100 项）
+  Ruff check/format、学习样例、协议 stub、独立参考核对、前端构建和浏览器验收全部通过
+  两项 NOT_RUN 是未请求的真实能力冒烟与真实查询图冒烟
+git diff --check
+  无空白错误
+```
+
+构建和浏览器在本机受限执行环境中需要允许创建 Vite 临时配置与浏览器/测试子进程；已实际在允许的本机进程环境执行，未把权限受限失败算作通过。初次失败用例提供了不存在的日期，流程正确要求澄清；验收改用有效日期但逆序区间触发规划契约失败，没有改变日期或澄清约束。
+
+浏览器截图实际生成于忽略目录 `.local/screenshots/stage4-workspace.png`、`stage4-mobile.png`，已逐张查看。补充刷新后等待 chart canvas 渲染的断言，避免把按需加载占位符截图当成图表完成。桌面 1440 像素、移动布局 390 像素已检查，无页面横向溢出及 pageerror。真实杀进程期间出现一次预期的 Vite ECONNREFUSED，页面重新连接后读取持久化状态。
+
+### 限制与未执行
+
+- 未调用真实模型：当前没有 Key，不能把离线浏览器流程或协议 stub 当作 DeepSeek 质量验证；未跑开发/冻结评测集，不报告准确率、修复质量或费用。也未验证容器、公网和其他系统/浏览器。
+- 仅支持一个 API 进程、两项并发；启动开发服务前停止旧实例，统一验收前停止 API/5173 前端。测试自己的 API 用 18004。进程锁、数据库及 saver 初始化需要真实 PostgreSQL，数据库恢复后需要重新启动业务服务。
+- graph checkpoint 和 runs 快照不在一个事务。崩溃窗口遵循 metadata 的 running → interrupted，即使 checkpoint 已更靠后也不自动恢复，用户重试创建新 run；不承诺自动续跑或恰好执行一次。正常等待澄清的 checkpoint 恢复已实测。
+- 历史最多 50 项；Cookie 7 天到期或清除后旧历史不可访问，持久化数据尚无自动清理。澄清有效期 24 小时，超时从原问题重新查询。没有登录、多租户、外部队列或 SSE。
+- 金额卡片/表格保留分精度，图表坐标为 JS 数值近似；精确值以表格/API 为准。主 JS 约 236 kB，图表 chunk 约 517 kB（压缩前），后者仍触发 Vite 的 500 kB 提示，未提高阈值掩盖警告。
+- 重启验收专用服务把 SQL timeout 设置为 15 秒以稳定制造被锁阻塞的查询；产品默认仍为 3 秒，原有真实 PostgreSQL 超时测试保持通过。
+
+### 3 个必须理解的知识点
+
+1. 图状态描述当前规划与节点执行；runs 描述对外任务状态与会话归属；浏览器只展示 runs。图节点流写入快照，但待澄清/完成必须等调用真正退出，防止浏览器在 checkpoint 尚未暂停时抢先恢复。
+2. Cookie 里的随机 token 才是会话访问凭据，run_id 只是定位符。服务器将 Cookie 映射为 owner，再同时用 run_id/owner 查询；知道别人 run_id 也不能读取、澄清或重试。CSRF/Origin 校验保护写接口。
+3. “先读 waiting 再更新”可能让两个提交同时恢复同一 checkpoint；带版本/状态/有效期条件的 UPDATE 才能原子领取。进程重启与人工重试又是另一层问题，不能从有 checkpoint 推导自动续跑或恰好一次语义。
+
+### 可亲手操作的小练习
+
+打开工作台，问 `9月销售额是多少？`，看到澄清后刷新页面，再补充 `实付金额`。查看同一 URL 中的 run 编号、结果与展开的 waiting/clarify/plan 事件。另开浏览器无痕窗口访问这个结果 URL，观察查询不存在或不属于当前会话的提示。
+
+### 交给阶段 5
+
+可复用 QueryService、受限 SQL 执行器、五指标定义、精确报告和节点事件，以及 HTTP/浏览器的完整产品流程。下一阶段按计划建立开发题、模板族隔离的冻结题和约束/边界用例；参考 SQL/答案留在评测侧，不进入模型上下文。先离线跑评测链路，真实评测等本机 Key 与调用预算配置后执行。仍需记录错误拒绝、澄清质量、执行成功与结果正确的区别，不能从这次功能验收推导模型准确率。
+
+提交与推送：验收已通过，提交前检查及推送回执待执行；本段将在远端确认后补充提交号与实际推送结果。

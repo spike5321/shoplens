@@ -368,3 +368,14 @@ net_receipt_cents.invoke({"paid_cents": 100, "currency": "CNY"})   # 不报错�
 | Vite | https://vite.dev/ | 前端构建 |
 
 三方仓库的借鉴范围单独记在 `docs/references.md`。
+
+## 8. 阶段 4 会话、任务与浏览器决策（2026-10-02）
+
+- 不引入队列服务。FastAPI lifespan 管理一个 ThreadPoolExecutor（两项并发）和 app/reader 连接池；BoundedSemaphore 不接受无界排队。PostgreSQL 会话 advisory lock 拒绝第二个 API 进程，避免误标其他进程的运行任务。
+- 服务器生成会话 token（32 随机字节）和 owner UUID，Cookie HttpOnly/SameSite=Lax，非 local 时 Secure；数据库存 token 哈希、CSRF token 与 7 天到期时间。POST 检查 CSRF 和 Origin，所有任务操作按 owner 查库。没有账号系统，Cookie 到期访问权丢失，尚无自动数据清理。
+- runs 是 HTTP/历史的事实来源，snapshot 保留图节点输出；events 按 run/sequence 去重。节点流期间对外保持 running；图结束或真正 interrupt 后才发布终态。澄清 UPDATE 同时检查 owner、waiting 状态、revision 和 24 小时有效期，再调度图，因此并发双提交只有一个被领取。
+- LangGraph checkpoint 与元数据并非同一个事务。崩溃窗口一律按 runs 的 running → interrupted 处理，不自动重放，即使 checkpoint 已保存了更后面的节点。等待澄清的任务保持可恢复；用户重试从原问题创建新 run，不继承未确认补充，不承诺恰好执行一次。
+- React 650 ms 短轮询只读取服务端状态，连接错误 2 秒后重试；终态停止轮询。StrictMode 共享初始建会话 Promise，避免双请求覆盖 Cookie/CSRF。URL 保存选中的 run，刷新由数据库重新读取。历史最多 50 项。
+- ECharts 6.1.0 按需加载固定 bar/line 组件。表格/卡片金额用 BigInt 保留分精度；图表坐标转 JS 数值，精确答案以表格/API 十进制字符串为准。当前主 JS 约 236 kB、图表约 517 kB（压缩前）；图表 chunk 仍触发 Vite 500 kB 提示，未改变警告阈值。
+- Playwright 1.63.0 在本机 Edge 无头模式验证真实 PostgreSQL 和后端进程重启，不 mock 业务 API。锁测试的 SQL timeout 设为 15 秒以留出终止窗口；产品默认仍是 3 秒，原有真实数据库超时测试继续验证。截图/报告都在忽略目录，测试 Cookie 经 stdin 清理，不写文件或命令行。
+- 当前没有真实 Key，阶段 4 浏览器只证明产品流程与持久化，真实模型行为/质量、Linux/Chromium、容器和公网发布都未验证。

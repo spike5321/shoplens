@@ -5,14 +5,14 @@
 > ⚠️ **本项目使用自行生成、固定随机种子的合成电商数据**，用于演示与评测。
 > 界面上会明确标注「合成演示数据」，不代表任何真实业务。
 
-## 当前状态：阶段 3（查询内核）已实现，真实模型验证待 Key
+## 当前状态：阶段 4（浏览器工作台与持久化）已实现，真实模型验证待 Key
 
 已完成：
 
 - 项目骨架：`backend/` `frontend/` `data/` `evals/` `docs/` `tests/` `scripts/`
 - 依赖配置与锁文件、`.gitignore`、无真实密钥的 `.env.example`
 - 后端 `GET /healthz`（存活）与 `GET /readyz`（真实探测 PostgreSQL）
-- 前端最小连通页（Vite + React + TypeScript）
+- React/TypeScript 查询工作台：示例问题、数据/模型标记、澄清、指标卡片、表格、ECharts 条形/折线图、期间比较、SQL 与节点事件、当前会话历史
 - 独立学习样例：LangChain `@tool` 契约 + LangGraph 条件边小图（离线可跑）
 - 真实模型冒烟脚手架 `scripts/smoke_real_model.py`：
   `--stub` 自证「请求/响应协议接线正确」（4/4 通过）；
@@ -27,9 +27,10 @@
 - 独立 SQL 执行器：PostgreSQL 方言 AST 允许列表、分析视图/字段检查、reader 连接池、只读事务、3 秒语句超时、200 行保护上限与显式 Top N 区分；真实 PostgreSQL 集成测试覆盖权限、超时、截断和时区边界
 - Pydantic 查询计划、LangChain 结构化输出适配与明确标识的离线模型；LangGraph 显式规划、澄清、加载字典、生成 SQL、校验、执行、最多一次修复和确定性结果说明
 - 五指标、日/渠道/类别分组、Top N、总体/渠道/类别的两个期间比较；图表配置和变化率由同一查询结果生成
-- `app_state` 下的 PostgreSQL checkpoint，使用 app 凭据；实际通过两个独立进程的暂停/恢复测试。CLI/API 共用内核检查任务 owner，尚未提供浏览器会话接口
+- `app_state` 下的 PostgreSQL checkpoint、sessions/runs/events；HTTP 接口用服务端随机 Cookie 取得 owner，检查读取、澄清、重试和历史归属；原子拒绝重复或过期澄清
+- 单进程两项查询并发、短轮询；真实浏览器验证刷新读取、两个会话隔离、后端进程重启后的完成结果/澄清恢复和运行中断
 
-**后续阶段**：HTTP 查询接口、浏览器工作台、会话/历史与重启任务管理属于阶段 4；模型质量评测和容器交付尚未实现。当前没有 Key，阶段 3 真实模型四场景冒烟明确未验证；离线模型及协议 stub 不代表模型质量。
+**后续阶段**：模型质量评测和容器交付尚未实现。当前没有 Key，真实模型查询图与浏览器链路未验证；离线模型及协议 stub 不代表模型质量。最新实测与限制见 `docs/progress.md`。
 
 执行器当前支持指定分析视图上的单条 `SELECT`、聚合、普通 CTE 和 `FROM` 子查询。明确拒绝 `JOIN`、`UNION`、递归 CTE、`SELECT *`、未批准函数及视图以外的数据源。模型生成的 SQL 以后只能经此模块执行；它不是通用 SQL 沙箱，也不判断指标口径是否正确。
 
@@ -59,7 +60,7 @@ with QueryExecutor() as executor:
 .\.venv\Scripts\python.exe scripts/query_cli.py show <run_id>
 ```
 
-CLI 默认是 `offline-query-v1` 离线假模型，支持有限中文演示句式，但数值来自真实 PostgreSQL。它以固定参考日期 `2026-09-30` 解释相对时间，日期区间为左闭右开。CLI 的 `--owner` 仅供本机演示，不能当作 HTTP 身份认证；阶段 4 会从服务端会话取得 owner。
+CLI 默认是 `offline-query-v1` 离线假模型，支持有限中文演示句式，但数值来自真实 PostgreSQL。它以固定参考日期 `2026-09-30` 解释相对时间，日期区间为左闭右开。CLI 的 `--owner` 仅供本机演示，不能当作 HTTP 身份认证；HTTP 从服务端会话取得 owner。
 
 在本机 `.env` 配好 Key 后，显式启用真实模型（不要把 Key 发到聊天里）：
 
@@ -70,6 +71,54 @@ CLI 默认是 `offline-query-v1` 离线假模型，支持有限中文演示句�
 
 查询记录含节点耗时、模型调用数、可用 Token 和错误类别；未返回 usage 时 Token 为 null。网络自动重试关闭，SQL 修复最多一次，模型调用最多五次，澄清最多两轮，节点活动时间预算 90 秒（等待澄清不计入；在节点边界检查）。费用尚未估算。
 
+## 浏览器工作台
+
+启动下方的后端和前端后，打开 [本机工作台](http://127.0.0.1:5173)。可以依次试：
+
+1. `9月各渠道实付金额`：同一结果生成表格和条形图。
+2. `9月每天的订单数`：按业务日期生成折线图。
+3. `9月销售额是多少？`：补充 `实付金额` 后继续同一任务。
+4. `9月退款金额与8月比较`：展示两个期间及确定性差额/变化率。
+
+前端默认通过 Vite 的 `/api` 代理访问后端。页面 URL 中的 `run` 支持刷新重新读取；历史最多返回当前会话最近 50 项。Cookie 的访问期限为 7 天，清除 Cookie 或到期后不能再访问旧会话；数据库尚未实现自动清理。
+
+| 接口 | 用途/请求体 |
+|---|---|
+| `GET /api/session` | 建立匿名会话，返回 CSRF、模型/数据标记和固定参考日期 |
+| `POST /api/runs` | `{"question":"9月实付金额"}`，返回 202，后台运行 |
+| `GET /api/runs/{run_id}` | 读取状态、结果、SQL 和节点事件 |
+| `POST /api/runs/{run_id}/clarify` | `{"text":"实付金额","revision":0}`；原子检查状态、版本与 24 小时有效期 |
+| `GET /api/runs` | 当前会话历史 |
+| `POST /api/runs/{run_id}/retry` | 失败、中断或澄清到期时，从原问题创建新任务 |
+
+POST 请求均须带当前会话的 `X-CSRF-Token`。Cookie 为服务端安全随机生成的 opaque token，数据库只存其哈希；`HttpOnly; SameSite=Lax; Path=/`，非 local 环境启用 `Secure`，需 HTTPS。所有业务响应禁止缓存，浏览器不能指定 owner 或内部 checkpoint thread_id。
+
+服务仅支持一个 API 进程，以 PostgreSQL advisory lock 防止第二个进程错误接管；同时最多执行两项查询，忙时返回 429。节点输出写入 PostgreSQL，完成/失败/等待澄清只在图调用退出后发布。强制结束进程后，重启把遗留 running 标成 interrupted；已完成结果和等待澄清仍可读取/继续。重试创建新 run，不自动续跑旧任务。
+
+数据日期覆盖在启动时通过 reader 和受限查询从实际现金事件计算，包含 10 月边界订单及跨期退款；当前默认种子是 `[2026-07-01, 2026-10-25)`。参考日期仍固定为 `2026-09-30`。金额在 API 中为精确十进制字符串，表格/卡片使用整数分格式化为元；图表的绘制坐标使用 JS 数值，不能替代表格的精确值。
+
+### 浏览器验收
+
+本机 Windows 使用已安装的 Microsoft Edge 无头浏览器。测试会启动自己的后端，执行真实进程终止/重启，数据库仅清理测试创建的会话，不更改合成业务数据。请先停止正在运行的 ShopLens API 和 5173 端口前端，再运行统一验收。
+
+```powershell
+Push-Location frontend
+npm run test:e2e
+Pop-Location
+```
+
+没有 Edge 时，可安装 Playwright Chromium 并选择它：
+
+```powershell
+Push-Location frontend
+npx playwright install chromium
+$env:SHOPLENS_BROWSER_CHANNEL = "chromium"
+npm run test:e2e
+Pop-Location
+```
+
+缺少浏览器时返回 NOT_RUN/2；`--skip-postgres` 同时把数据库测试和浏览器持久化验收标为未执行。已实测的环境是 Windows/Edge，其他浏览器与操作系统尚未验证。真实模型需要本机配置 Key 并切换 provider；当前浏览器验收使用明确标识的离线假模型及真实数据库。
+
 ## 快速开始
 
 ```powershell
@@ -78,16 +127,17 @@ python -m venv .venv
 # ⚠️ 本机全局 pip 源在当前网络下不可达，且 pip 的配置文件必须只含 ASCII。
 #    新建 venv 后先写这一行，否则会出现「pip 跑了但一个包都没装」的静默失败：
 Set-Content -Path .venv/pip.ini -Value @('[global]', 'index-url = https://pypi.org/simple') -Encoding Ascii
-.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.lock.txt
 
 # 2) 本地 PostgreSQL（本机无 Docker）
 .\scripts\pg.ps1 init          # initdb + 启动 + 建库 + 生成 .env
 .\scripts\pg.ps1 status
 
-# 2a) 阶段 1：建角色、迁移、灌入固定种子数据并交叉核对
+# 2a) 建角色、全部迁移、灌入固定种子数据并交叉核对
 .\.venv\Scripts\python.exe scripts/setup_db.py
 .\.venv\Scripts\python.exe scripts/seed_data.py
 .\.venv\Scripts\python.exe scripts/check_reference.py
+.\.venv\Scripts\python.exe scripts/setup_checkpoints.py
 # 想单独检查可手算小样例时：
 .\.venv\Scripts\python.exe scripts/seed_data.py --fixture-only
 .\.venv\Scripts\python.exe scripts/check_reference.py --fixture-only
@@ -95,23 +145,23 @@ Set-Content -Path .venv/pip.ini -Value @('[global]', 'index-url = https://pypi.o
 
 # 3) 后端
 Push-Location backend
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 Pop-Location
 #    http://127.0.0.1:8000/healthz
 #    http://127.0.0.1:8000/readyz
 
 # 4) 前端
 Push-Location frontend
-npm install
+npm ci
 npm run dev                                    # http://127.0.0.1:5173
 Pop-Location
 
-# 5) 统一验收：静态检查、离线测试、真实 PostgreSQL、前端构建
+# 5) 停止上述开发服务后验收（浏览器测试独占 5173/18004，后端只支持一个进程）
 .\.venv\Scripts\python.exe scripts/verify.py
 ```
 
 `verify.py` 复用 Ruff、pytest 标记、离线 LangGraph 样例、模型协议 stub、
-`check_reference.py` 和 `npm run build`。每项输出 `PASS` / `FAIL` / `NOT_RUN`；
+`check_reference.py`、`npm run build` 和 `npm run test:e2e`。每项输出 `PASS` / `FAIL` / `NOT_RUN`；
 退出码 `0` 为已请求的检查通过，`1` 为至少一项失败，`2` 为必需检查因环境未执行。
 默认**不调用真实模型**，`NOT_RUN` 会显示在汇总中，但不会让默认验收返回 `2`。
 若 `npm` 不在 `PATH`，可加 `--npm "C:\path\to\npm.cmd"`。

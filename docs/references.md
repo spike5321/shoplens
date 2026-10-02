@@ -63,3 +63,11 @@
 - [ChatDeepSeek](https://docs.langchain.com/oss/python/integrations/chat/deepseek)：核对结构化输出与 usage。当前锁定版本使用 `method="function_calling", include_raw=True`；本地协议 stub 通过，当前无 Key，真实服务商的阶段 3 验证未执行。
 
 仅参考接口说明并检查本机已安装包源码，没有复制第三方业务实现。
+
+## 6. 阶段 4 官方接口核对（2026-10-02）
+
+- [FastAPI lifespan](https://fastapi.tiangolo.com/advanced/events/)：在应用生命周期创建/关闭连接池、工作线程和进程锁，健康探针独立于业务服务可用性。
+- [PostgreSQL explicit locking](https://www.postgresql.org/docs/18/explicit-locking.html)：用会话 advisory lock 限制单个 API 进程；澄清由带状态/版本/有效期条件的 UPDATE 原子领取。
+- [MDN Set-Cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)：核对 HttpOnly、SameSite、Secure、Path、Max-Age。项目另用 CSRF header 与 Origin 校验，Cookie 原值不进入日志/截图。
+- [Playwright web server](https://playwright.dev/docs/test-webserver) 和 [API testing](https://playwright.dev/docs/api-testing)：测试独占 Vite 服务与独立浏览器 context，各 context 的 request 使用自己的 Cookie；后端子进程由测试显式终止并重启。
+- [ECharts 基础折线图](https://echarts.apache.org/handbook/zh/how-to/chart-types/line/basic-line/)：固定代码把类型化 labels/values 转为 line/bar 配置；未使用模型 JavaScript。版本锁定为 ECharts 6.1.0、Playwright 1.63.0；界面为项目自行实现，没有复制参考仓库界面或业务代码。
