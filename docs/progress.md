@@ -581,3 +581,5 @@ python scripts/verify.py                     Ruff 2 项、离线 3 项、Postgre
 ### 交给阶段 3
 
 用 `QueryExecutor` 的上下文管理器执行模型候选 SQL；把 `QueryErrorCode` 作为图的可见错误类别，至多修复一次。计划节点须从 `data/metrics.yaml` 选指标与业务时间区间；模型不能覆盖 reader 凭据、SQL 验证、行数上限或超时。解释数字前先检查 `truncated` 与 `complete_for_full_aggregate`。
+
+提交与推送：阶段 2 代码及本交接主体已提交为 `41fd792`（`feat: add constrained SQL query executor`）；`git push origin main` 成功，远端从 `4a4f9ce` 更新至 `41fd792`。本段推送回执随后单独提交。
