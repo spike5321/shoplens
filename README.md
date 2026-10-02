@@ -5,7 +5,7 @@
 > ⚠️ **本项目使用自行生成、固定随机种子的合成电商数据**，用于演示与评测。
 > 界面上会明确标注「合成演示数据」，不代表任何真实业务。
 
-## 当前状态：阶段 1（数据、口径和参考答案）已完成
+## 当前状态：阶段 2（受限 SQL 执行器）已完成
 
 已完成：
 
@@ -24,8 +24,21 @@
 - 九单手工边界样例、固定种子的 3000 单合成数据、五指标 YAML 字典
 - 14 个手算问题；独立 Python 原始记录计算与真实 PostgreSQL SQL 交叉核对
 - `analytics_reader` 只能读取分析视图，`shoplens_app` 仅获应用状态 schema 权限
+- 独立 SQL 执行器：PostgreSQL 方言 AST 允许列表、分析视图/字段检查、reader 连接池、只读事务、3 秒语句超时、200 行保护上限与显式 Top N 区分；真实 PostgreSQL 集成测试覆盖权限、超时、截断和时区边界
 
-**后续阶段**：任意模型 SQL 的 AST 校验与受限执行、LangGraph 查询流程、澄清、图表、持久化和模型评测尚未实现。阶段 1 的参考 SQL 只使用固定、人工编写的聚合查询，不接受模型或用户输入的 SQL。
+**后续阶段**：LangGraph 查询流程、澄清、图表、持久化和模型评测尚未实现。阶段 2 的执行器是独立模块，尚未接入模型或 HTTP 查询接口。
+
+执行器当前支持指定分析视图上的单条 `SELECT`、聚合、普通 CTE 和 `FROM` 子查询。明确拒绝 `JOIN`、`UNION`、递归 CTE、`SELECT *`、未批准函数及视图以外的数据源。模型生成的 SQL 以后只能经此模块执行；它不是通用 SQL 沙箱，也不判断指标口径是否正确。
+
+```python
+from app.query_executor import QueryExecutor
+
+with QueryExecutor() as executor:
+    result = executor.execute("SELECT COUNT(*) AS n FROM analytics.sales_lines")
+    print(result.rows, result.truncated)
+```
+
+`result.truncated` 为真时，返回行不能用来声称完整总额、占比或排名。明确的 Top N 需同时传 `top_n=N`，SQL 必须有 `ORDER BY` 和对应的 `LIMIT N`；Top N 结果也不代表完整数据集。
 
 ## 快速开始
 

@@ -533,3 +533,51 @@ python scripts/verify.py --skip-postgres --npm <node.exe（故意给错可执行
 ```
 
 环境记录：本次命令行的 `PATH` 有 Node 但没有 npm，已有的 npm 安装可通过 `--npm` 指定，因此前端构建最终已实际通过。`scripts/pg.ps1 status` 在当前受限环境报告未运行，但 reader 真实连接、3 项集成测试及 SQL 对照都通过；统一脚本以实际数据库连接探测为准。真实模型未请求，因此没有调用或产生本次模型验证结论。
+
+---
+
+## 阶段 2：受限 SQL 执行器
+
+完成日期：2026-10-02。基于阶段 1 的固定种子合成数据和真实 PostgreSQL 18.1 验证；没有调用真实模型。
+
+### 已实现
+
+- `backend/app/query_executor.py`：用 SQLGlot 的 PostgreSQL 方言解析单条 `SELECT`，按 AST 节点允许列表和每个查询块的来源、字段检查。仅允许 `analytics.sales_lines`、`analytics.refund_events`、`analytics.cash_events`，CTE 与 `FROM` 子查询也逐层检查；未知语法、函数和类型转换一律拒绝。
+- `QueryExecutor` 只取得 `settings.dsn("reader")`。查询放在 PostgreSQL 只读事务里，以 `SET LOCAL` 等价的 `set_config(..., true)` 设置事务级 `statement_timeout`；连接池大小有限。服务端追加 `max_rows + 1` 的保护 LIMIT，检测截断后仅返回 `max_rows` 行。
+- 显式 Top N 必须由调用方给出 `top_n`，SQL 同时包含 `ORDER BY` 与匹配的 `LIMIT`，且 N 不超过服务端行数上限。结构化结果含 `truncated`、`requested_top_n` 和 `complete_for_full_aggregate`；截断与 Top N 都不能充当完整数据集聚合。
+- `tests/test_stage2_query_executor.py`：离线检查合法聚合、CTE、子查询与各类非法 SQL；真实数据库检查结果、空集、行数截断、Top N、reader 对业务表和状态 schema 的拒绝、通过锁等待触发的实际 100 ms 语句超时，以及 10 月 1 日零点的 `+08` 时间边界。
+
+### 实际执行与结果
+
+```text
+scripts/pg.ps1 start                         PostgreSQL 18.1 已启动
+python -m pytest -q -p no:cacheprovider tests/test_stage2_query_executor.py -m 'not integration'
+                                             25 项通过
+python -m pytest -q -p no:cacheprovider tests/test_stage2_query_executor.py -m integration
+                                             3 项通过
+python scripts/verify.py                     Ruff 2 项、离线 3 项、PostgreSQL 2 项、前端构建 1 项：
+                                             PASS=8 FAIL=0 NOT_RUN=1，退出码 0
+                                             NOT_RUN 仅为未请求的真实模型冒烟
+```
+
+独立测试还确认：`SELECT COUNT(*)` 得到 5641 条支付明细，合法 CTE 的类别数为 4，`2026-10-01 00:00:00+08` 起有 1 条边界支付明细。超时测试由 admin 事务持有业务表排他锁，reader 查询在设置的 100 ms 超时后返回 `timeout`，释放锁后再查询成功。完整阶段 1 参考计算仍通过。
+
+### 限制与未验证
+
+- 当前明确不支持 `JOIN`、`UNION`、递归 CTE、`SELECT *`、关联/标量子查询、OFFSET、任意函数和未经审查的类型转换；因此范围是有限的项目查询子集，不是通用 SQL 沙箱。
+- AST 允许列表负责语法与来源边界，不保证指标定义正确。阶段 3 必须按 `data/metrics.yaml` 规划时间、维度和口径，并继续以独立参考结果核验。
+- 尚未接入 LangGraph、模型或 HTTP 查询接口；真实模型本阶段未请求、未验证。Docker Compose 和持久化仍分别属于后续阶段。
+
+### 必须理解的 3 个知识点
+
+1. `SELECT` 开头不足以证明安全：CTE、子查询与函数可能访问其他对象或产生副作用，因此逐节点检查、reader 角色和只读事务必须共同生效。
+2. `LIMIT 200` 只限制返回量，不保证查询及时结束或结果完整。数据库超时限制执行时间；多读一行才能知道结果是否被保护上限截断。
+3. 用户明确的 Top N 和执行器截断语义不同。前者需要确定性排序与匹配的 N；两者的返回行都不能当作全量数据计算总体指标。
+
+### 可亲手修改的小练习
+
+把 `tests/test_stage2_query_executor.py` 中行数上限测试里的 `sql_max_rows=2` 改成 3，运行该测试，观察普通查询返回 3 行且仍标 `truncated`，再改回 2。这个练习只改测试参数，不改变生产约束。
+
+### 交给阶段 3
+
+用 `QueryExecutor` 的上下文管理器执行模型候选 SQL；把 `QueryErrorCode` 作为图的可见错误类别，至多修复一次。计划节点须从 `data/metrics.yaml` 选指标与业务时间区间；模型不能覆盖 reader 凭据、SQL 验证、行数上限或超时。解释数字前先检查 `truncated` 与 `complete_for_full_aggregate`。
