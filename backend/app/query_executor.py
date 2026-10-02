@@ -95,7 +95,7 @@ ALLOWED_NODES = (
     exp.With,
 )
 
-ALLOWED_CASTS = {"DATE", "TIMESTAMP", "TIMESTAMPTZ", "INT", "BIGINT", "NUMERIC", "TEXT"}
+ALLOWED_CASTS = {"DATE", "TIMESTAMP", "TIMESTAMPTZ", "INT", "BIGINT", "NUMERIC", "DECIMAL", "TEXT"}
 ALLOWED_DATE_PARTS = {"day", "week", "month"}
 
 
@@ -105,6 +105,7 @@ class QueryErrorCode(StrEnum):
     FORBIDDEN_SOURCE = "forbidden_source"
     FORBIDDEN_COLUMN = "forbidden_column"
     INVALID_LIMIT = "invalid_limit"
+    PLAN_MISMATCH = "plan_mismatch"
     TIMEOUT = "timeout"
     DATABASE_ERROR = "database_error"
 

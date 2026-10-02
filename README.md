@@ -5,7 +5,7 @@
 > ⚠️ **本项目使用自行生成、固定随机种子的合成电商数据**，用于演示与评测。
 > 界面上会明确标注「合成演示数据」，不代表任何真实业务。
 
-## 当前状态：阶段 2（受限 SQL 执行器）已完成
+## 当前状态：阶段 3（查询内核）已实现，真实模型验证待 Key
 
 已完成：
 
@@ -25,8 +25,11 @@
 - 14 个手算问题；独立 Python 原始记录计算与真实 PostgreSQL SQL 交叉核对
 - `analytics_reader` 只能读取分析视图，`shoplens_app` 仅获应用状态 schema 权限
 - 独立 SQL 执行器：PostgreSQL 方言 AST 允许列表、分析视图/字段检查、reader 连接池、只读事务、3 秒语句超时、200 行保护上限与显式 Top N 区分；真实 PostgreSQL 集成测试覆盖权限、超时、截断和时区边界
+- Pydantic 查询计划、LangChain 结构化输出适配与明确标识的离线模型；LangGraph 显式规划、澄清、加载字典、生成 SQL、校验、执行、最多一次修复和确定性结果说明
+- 五指标、日/渠道/类别分组、Top N、总体/渠道/类别的两个期间比较；图表配置和变化率由同一查询结果生成
+- `app_state` 下的 PostgreSQL checkpoint，使用 app 凭据；实际通过两个独立进程的暂停/恢复测试。CLI/API 共用内核检查任务 owner，尚未提供浏览器会话接口
 
-**后续阶段**：LangGraph 查询流程、澄清、图表、持久化和模型评测尚未实现。阶段 2 的执行器是独立模块，尚未接入模型或 HTTP 查询接口。
+**后续阶段**：HTTP 查询接口、浏览器工作台、会话/历史与重启任务管理属于阶段 4；模型质量评测和容器交付尚未实现。当前没有 Key，阶段 3 真实模型四场景冒烟明确未验证；离线模型及协议 stub 不代表模型质量。
 
 执行器当前支持指定分析视图上的单条 `SELECT`、聚合、普通 CTE 和 `FROM` 子查询。明确拒绝 `JOIN`、`UNION`、递归 CTE、`SELECT *`、未批准函数及视图以外的数据源。模型生成的 SQL 以后只能经此模块执行；它不是通用 SQL 沙箱，也不判断指标口径是否正确。
 
@@ -39,6 +42,33 @@ with QueryExecutor() as executor:
 ```
 
 `result.truncated` 为真时，返回行不能用来声称完整总额、占比或排名。明确的 Top N 需同时传 `top_n=N`，SQL 必须有 `ORDER BY` 和对应的 `LIMIT N`；Top N 结果也不代表完整数据集。
+
+阶段 3 还按确认的计划验证指标聚合、日期边界、分组和排序。当前只接受限定的单层 SQL 形状，SQL 写法虽合法但不符合形状时会拒绝，不能宣称验证了任意 SQL 的业务语义。期间比较暂不和 Top N 或日分组组合。
+
+## 查询内核 CLI
+
+先完成下文的数据库迁移/种子步骤，再初始化 checkpoint（使用 app 角色，不用 reader）：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/setup_checkpoints.py
+.\.venv\Scripts\python.exe scripts/query_cli.py demo
+.\.venv\Scripts\python.exe scripts/query_cli.py ask "2026年9月各渠道实付金额"
+.\.venv\Scripts\python.exe scripts/query_cli.py ask "2026年9月销售额"
+# 上一条返回 awaiting_clarification；复制其 run_id 后补充口径
+.\.venv\Scripts\python.exe scripts/query_cli.py resume <run_id> "期间净收款"
+.\.venv\Scripts\python.exe scripts/query_cli.py show <run_id>
+```
+
+CLI 默认是 `offline-query-v1` 离线假模型，支持有限中文演示句式，但数值来自真实 PostgreSQL。它以固定参考日期 `2026-09-30` 解释相对时间，日期区间为左闭右开。CLI 的 `--owner` 仅供本机演示，不能当作 HTTP 身份认证；阶段 4 会从服务端会话取得 owner。
+
+在本机 `.env` 配好 Key 后，显式启用真实模型（不要把 Key 发到聊天里）：
+
+```powershell
+.\.venv\Scripts\python.exe scripts/query_cli.py --real-model ask "2026年9月实付金额"
+.\.venv\Scripts\python.exe scripts/smoke_query_graph.py --real-model
+```
+
+查询记录含节点耗时、模型调用数、可用 Token 和错误类别；未返回 usage 时 Token 为 null。网络自动重试关闭，SQL 修复最多一次，模型调用最多五次，澄清最多两轮，节点活动时间预算 90 秒（等待澄清不计入；在节点边界检查）。费用尚未估算。
 
 ## 快速开始
 

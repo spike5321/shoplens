@@ -583,3 +583,65 @@ python scripts/verify.py                     Ruff 2 项、离线 3 项、Postgre
 用 `QueryExecutor` 的上下文管理器执行模型候选 SQL；把 `QueryErrorCode` 作为图的可见错误类别，至多修复一次。计划节点须从 `data/metrics.yaml` 选指标与业务时间区间；模型不能覆盖 reader 凭据、SQL 验证、行数上限或超时。解释数字前先检查 `truncated` 与 `complete_for_full_aggregate`。
 
 提交与推送：阶段 2 代码及本交接主体已提交为 `41fd792`（`feat: add constrained SQL query executor`）；`git push origin main` 成功，远端从 `4a4f9ce` 更新至 `41fd792`。本段推送回执随后单独提交。
+
+---
+
+## 阶段 3：LangChain + LangGraph 查询内核
+
+实现与验收日期：2026-10-02。离线流程、协议接线与真实 PostgreSQL 已验证；当前 `.env` 没有模型 Key，阶段 3 真实模型验证未执行。
+
+### 已实现行为和关键文件
+
+- `backend/app/query_plan.py`：禁止额外字段的 Pydantic 查询计划、SQL 草稿与澄清契约；五指标、日期、分组、Top N、两个期间比较。候选 SQL 通过 AST 检查后，还与根据计划生成的业务形状核对，检查聚合表达式、视图、日期边界、分组、排序。该过程不读取手算或评测答案。
+- `backend/app/query_model.py`：`DeepSeekQueryModel` 使用 LangChain 的结构化工具输出并取得 raw usage；`OfflineQueryModel` 明确标为 `offline-query-v1`，只支持有限中文演示句式。输入只含用户问题、已确认计划、指标字典和公开 Schema；参考计算不进入模型上下文。SQL 故障注入仅在测试/demo 适配器里启用。
+- `backend/app/query_graph.py`：显式节点 `plan → context → draft → validate → execute → summarize`，澄清经过 `waiting → clarify → plan`，失败最多进入 `repair` 一次。owner、run_id、内部 thread_id、修复计数、模型调用与时间预算由服务端决定。节点事件记录 run_id、耗时、调用数、可用 Token 和错误类别，不输出内部思维链或凭据。
+- 文字说明、变化率和类型化柱状/折线图数据由查询结果确定性计算。金额及比值保留十进制字符串；零分母返回空值，基期零值不计算百分比；截断时停止生成图表及全量比较。Top N 使用稳定维度排序打破并列，明确不能当作总体。
+- `backend/app/query_checkpoint.py` 和 `scripts/setup_checkpoints.py`：app 凭据在 `app_state` 创建及使用官方 saver 的版本化表。reader 不能访问 checkpoint。澄清中断前不调用模型或执行 SQL，恢复后的事件不会重复登记等待步骤。
+- `scripts/query_cli.py`：本机 ask/resume/show/demo；`QueryService` 是后续 API 可复用的内核，读取和继续均检查 owner，内部 thread_id 由服务端 run_id 派生。CLI owner 参数仅供本机演示，不是 HTTP 身份认证。
+- `scripts/smoke_query_graph.py`：预留真实模型正常查询、澄清恢复、跨期退款、明确拒绝四场景；在脚本外层以独立原始记录计算核对答案。真实 Key 缺失返回 NOT_RUN/2；`scripts/verify.py --real-model` 同时调用原有能力冒烟和新的图冒烟。
+
+### 实际命令与输出
+
+```text
+python scripts/setup_checkpoints.py
+  Checkpoint tables ready in app_state; no analytics credentials used.
+python scripts/query_cli.py demo
+  normal / clarify / cross_period / repair / repair_exhausted / unsupported：6/6 符合预期
+  repair 成功和耗尽两例 repair_count 都是 1；非法候选没有进入 execute
+python -m pytest -q -p no:cacheprovider tests/test_stage3_query_graph.py
+  18 项全部通过，其中 3 项真实 PostgreSQL 集成测试
+python scripts/verify.py
+  PASS=8 FAIL=0 NOT_RUN=2，退出码 0
+  离线 pytest 87 项通过；真实 PostgreSQL pytest 9 项通过；原有参考核对和前端构建通过
+  NOT_RUN 为未请求的真实能力冒烟、真实查询图冒烟
+python scripts/smoke_query_graph.py --real-model
+  NOT_RUN：当前未配置 Key；脚本退出码 2，没有调用模型
+```
+
+真实集成验证包括：五指标与独立 Python 原始记录结果一致；日分组图表点来自相同表格；两个期间差额由返回值计算；Top N 返回与标记正确；无数据客单价为空。暂停测试启动一个 CLI 子进程，退出后在第二个 CLI 子进程继续同一 run_id，结果成功且 owner、模型调用计数保留。它证明 PostgreSQL checkpoint 的进程间恢复，不代表浏览器会话或完整任务管理已实现。
+
+本地 HTTP stub 实际走 `ChatDeepSeek.with_structured_output`，验证 QueryPlan/SqlDraft 的工具契约、参数解析和 usage 提取（假 usage 为测试输入）。该结果只证明协议接线，不代表真实 DeepSeek 输出质量。
+
+本阶段修复的兼容问题：SQLGlot 将 `NUMERIC` 规范化为 `DECIMAL`，阶段 2 的字符串类型允许列表误拒了合法客单价查询。现补入该固定数值类型，正常与零分母客单价在真实库上均验证通过，没有放开未经批准的类型或函数。
+
+### 当前约束与未验证
+
+- 当前没有 Key；真实模型的规划准确率、SQL 生成及一次修复效果全部未验证，不能用离线 6/6 代替。也没有执行开发/冻结评测集，不报告准确率或费用。
+- SQL 业务核对使用限定单层形状，不是任意等价 SQL 的语义证明。别名限定和等价时区边界可归一化，其余不同写法可能被拒绝并最多修复一次。支持中文显式月份/日期及今天、上月、上周的演示范围；日期歧义和缺失会澄清。
+- 首版期间比较仅支持总体、渠道、类别，暂不与 Top N 或日分组组合；每题单个指标，不支持任意过滤、预测或因果解释。
+- 每任务最多五次适配器调用、两轮澄清、一次 SQL 修复；网络自动重试为零，单次模型请求不超过 20 秒或剩余预算。90 秒活动预算在节点前后检查，不计等待澄清和 checkpoint I/O，不能抢占正在运行的同步节点；数据库每条语句有独立超时。checkpoint 语句另设 5 秒超时。
+- Token 缺失或离线时为 null，费用不估算。HTTP 查询接口、匿名 Cookie 会话、历史列表、浏览器工作台与运行任务的重启管理属于阶段 4；本阶段没有宣称这些已完成。
+
+### 3 个必须理解的知识点
+
+1. 模型选择指标、范围和候选 SQL；图的条件边和确定性代码决定是否执行、是否修复、何时停止。模型输出契约没有 owner、凭据或计数器字段。
+2. `interrupt` 恢复时会从节点开头重放。等待状态登记放在前一个节点，interrupt 节点在暂停前没有外部副作用，恢复后只收集澄清文本再回到规划。
+3. SQL 执行成功不表示口径正确。AST 检查限制访问，业务形状核对约束计划；最终还要以独立参考计算验证结果，标准答案始终留在评测侧。
+
+### 可亲手运行的小练习
+
+运行 `python scripts/query_cli.py ask "2026年9月销售额"`，查看 `awaiting_clarification` 和返回的 run_id；退出该命令后运行 `python scripts/query_cli.py resume <run_id> "期间净收款"`。观察同一 run_id 从 waiting/clarify 返回 plan，最后查询的是 cash_events，修复次数仍为 0。再提交同一澄清应被拒绝。
+
+### 交给阶段 4
+
+复用 `QueryService.start/read/resume`、类型化计划/图表及 PostgreSQL saver。HTTP 层从安全随机服务端会话取得 owner，不能接受浏览器自报 owner 或 thread_id；添加应用 runs/events/sessions 元数据和历史读取，限制单进程并发，启动时标记失去执行者的 running 任务为 interrupted。已完成结果和等待澄清任务可利用现有 checkpoint，仍需真实浏览器、两个独立会话及完整服务重启验收。真实模型验证待本机 Key 配置后显式执行。

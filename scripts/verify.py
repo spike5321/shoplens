@@ -63,7 +63,7 @@ def run(name: str, command: list[str], *, cwd: Path = ROOT, env=None) -> Result:
     tail = "\n".join(output.splitlines()[-12:])
     if completed.returncode == 0:
         return Result(name, "PASS", tail)
-    if name == "Real model smoke" and completed.returncode == 2:
+    if name in {"Real model smoke", "Real graph smoke"} and completed.returncode == 2:
         return Result(name, "NOT_RUN", tail)
     return Result(name, "FAIL", f"exit code {completed.returncode}\n{tail}")
 
@@ -145,8 +145,16 @@ def main() -> int:
         env = os.environ.copy()
         env["SHOPLENS_MODEL_PROVIDER"] = "deepseek"
         results.append(run("Real model smoke", [PYTHON, "scripts/smoke_real_model.py"], env=env))
+        results.append(
+            run(
+                "Real graph smoke",
+                [PYTHON, "scripts/smoke_query_graph.py", "--real-model"],
+                env=env,
+            )
+        )
     else:
         results.append(Result("Real model smoke", "NOT_RUN", "opt in with --real-model"))
+        results.append(Result("Real graph smoke", "NOT_RUN", "opt in with --real-model"))
 
     for result in results:
         print(f"[{result.status}] {result.name}")
@@ -161,13 +169,16 @@ def main() -> int:
         return 1
     blocking_pending = any(
         result.status == "NOT_RUN"
-        and result.name != "Real model smoke"
+        and result.name not in {"Real model smoke", "Real graph smoke"}
         and not (args.skip_postgres and result.name.startswith("PostgreSQL "))
         for result in results
     )
     if blocking_pending:
         return 2
-    if args.real_model and results[-1].status == "NOT_RUN":
+    if args.real_model and any(
+        r.status == "NOT_RUN" and r.name in {"Real model smoke", "Real graph smoke"}
+        for r in results
+    ):
         return 2
     return 0
 

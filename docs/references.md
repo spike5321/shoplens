@@ -55,3 +55,11 @@
 验证：哪条测试/实测说明修改有效？
 许可与署名：实际复制代码是否保留要求的声明？
 ```
+
+## 5. 阶段 3 官方接口核对（2026-10-02）
+
+- [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)：核对 `interrupt`、`Command(resume=...)` 与节点恢复时的重放行为；项目把等待状态和中断节点分开，中断前不调用模型或执行 SQL。
+- [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence)：核对 checkpoint 与 thread_id 的作用；项目在应用凭据和 `app_state` schema 下使用 PostgreSQL saver，两个独立 CLI 进程实际验证恢复。
+- [ChatDeepSeek](https://docs.langchain.com/oss/python/integrations/chat/deepseek)：核对结构化输出与 usage。当前锁定版本使用 `method="function_calling", include_raw=True`；本地协议 stub 通过，当前无 Key，真实服务商的阶段 3 验证未执行。
+
+仅参考接口说明并检查本机已安装包源码，没有复制第三方业务实现。
