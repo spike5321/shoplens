@@ -5,7 +5,9 @@
 > ⚠️ **本项目使用自行生成、固定随机种子的合成电商数据**，用于演示与评测。
 > 界面上会明确标注「合成演示数据」，不代表任何真实业务。
 
-## 当前状态：阶段 5（评测与有证据的改进）已完成，阶段 6 尚未开始
+## 当前状态：阶段 6（本地交付与面试材料）已完成
+
+[容器启动与验收](docs/delivery.md) · [架构与请求走读](docs/architecture.md) · [三分钟演示](docs/demo.md) · [简历与面试问题](docs/interview.md) · [实测记录](docs/progress.md)
 
 已完成：
 
@@ -19,7 +21,7 @@
   无 Key 时明确报**「未验证」+ 退出码 2**，不用 stub 结果冒充真实模型。
   **2026-09-24 已用 `deepseek-chat` 真机跑通 4/4**（C1 工具调用 / C2 结构化输出 /
   C3 多轮闭环 / C4 歧义澄清），`create_agent` 预构建 Agent 同时验证通过。
-- 本地 PostgreSQL 18.1 免安装实例（本机无 Docker，走官方二进制替代路径）
+- 本地 PostgreSQL 18.1 免安装实例；另有独立 Docker Compose 交付路径
 - 四张业务表、`analytics` 下三个分析视图与数据库级金额约束（Alembic 迁移）
 - 九单手工边界样例、固定种子的 3000 单合成数据、五指标 YAML 字典
 - 14 个手算问题；独立 Python 原始记录计算与真实 PostgreSQL SQL 交叉核对
@@ -31,8 +33,9 @@
 - 单进程两项查询并发、短轮询；真实浏览器验证刷新读取、两个会话隔离、后端进程重启后的完成结果/澄清恢复和运行中断
 - 40 道开发题、40 道冻结题、24 条固定非法 SQL；独立原始记录评分、持久化调用预算、三配置真实模型对照与完整失败记录
 - 2026-10-08 真实查询图冒烟 4/4；完整 240 次评测已运行，结果及至少五个失败案例见 [评测报告](evals/REPORT.md)
+- 2026-10-08 干净容器构建/初始化、18 项容器 PostgreSQL 集成测试、容器重建后的历史恢复通过；容器离线页面与本机真实模型浏览器检查各 5/5 通过
 
-**后续阶段**：容器交付尚未实现。真实模型查询图与评测已显式运行；浏览器验收仍使用离线模型，未验证真实模型 HTTP/浏览器链路。总体客单价、部分 Top N 和超长区间拒绝存在真实失败，不能宣称支持范围内全部可靠；默认验收通过也不表示模型全部答对。最新实测与限制见 `docs/progress.md`。
+**交付范围**：本地可复现演示，提供 PostgreSQL → 迁移/种子 → API → Nginx 的 Compose 健康依赖链，API 镜像不含管理员凭据或评测答案。总体客单价、部分 Top N 和超长区间拒绝存在真实模型失败；默认验收通过也不表示模型全部答对。容器、真实模型浏览器及公网状态分别记录在 `docs/progress.md`，未部署公网。
 
 执行器当前支持指定分析视图上的单条 `SELECT`、聚合、普通 CTE 和 `FROM` 子查询。明确拒绝 `JOIN`、`UNION`、递归 CTE、`SELECT *`、未批准函数及视图以外的数据源。模型生成的 SQL 以后只能经此模块执行；它不是通用 SQL 沙箱，也不判断指标口径是否正确。
 
@@ -140,9 +143,11 @@ npm run test:e2e
 Pop-Location
 ```
 
-缺少浏览器时返回 NOT_RUN/2；`--skip-postgres` 同时把数据库测试和浏览器持久化验收标为未执行。已实测的环境是 Windows/Edge，其他浏览器与操作系统尚未验证。真实模型需要本机配置 Key 并切换 provider；当前浏览器验收使用明确标识的离线假模型及真实数据库。
+缺少浏览器时返回 NOT_RUN/2；`--skip-postgres` 同时把数据库测试和浏览器持久化验收标为未执行。已实测浏览器为 Windows/Edge；容器使用 Linux 镜像。统一浏览器验收仍使用离线模型及真实数据库；显式真实模型页面采集与独立评分见 [交付说明](docs/delivery.md)。
 
-## 快速开始
+## 快速开始：本机开发
+
+容器交付生成凭据只需 Python 标准库，步骤见 [本地容器交付](docs/delivery.md)。以下为保留的 Windows 开发路径。两条路径使用独立数据库，运行浏览器时仅占用一个 5173 端口。
 
 ```powershell
 # 1) 后端依赖（已锁版本）
@@ -152,7 +157,7 @@ python -m venv .venv
 Set-Content -Path .venv/pip.ini -Value @('[global]', 'index-url = https://pypi.org/simple') -Encoding Ascii
 .\.venv\Scripts\python.exe -m pip install -r backend/requirements.lock.txt
 
-# 2) 本地 PostgreSQL（本机无 Docker）
+# 2) 本地 PostgreSQL（免安装开发路径）
 .\scripts\pg.ps1 init          # initdb + 启动 + 建库 + 生成 .env
 .\scripts\pg.ps1 status
 
@@ -219,5 +224,9 @@ Pop-Location
 | `docs/decisions.md` | 版本、服务商适配、数据库运行方式、目录结构等决策与理由 |
 | `docs/progress.md` | 每阶段交接记录：已实现 / 验证结果 / 未验证项 / 下一阶段 |
 | `docs/references.md` | 第三方参考的借鉴范围、许可与署名 |
+| `docs/delivery.md` | 容器启动、迁移/种子、健康检查、显式模型验证和停止恢复 |
+| `docs/architecture.md` | 架构图、数据关系、HTTP 到 SQL 调用链及实现边界 |
+| `docs/demo.md` | 三分钟操作脚本和实际页面截图 |
+| `docs/interview.md` | 有证据的简历描述、五个深挖问题与走读练习 |
 | `data/metrics.yaml` | 五个指标的业务口径、时间字段、粒度、维度及关联规则 |
 | `planning/` | 产品、数据口径、架构与验收规范（项目计划的原始文件） |

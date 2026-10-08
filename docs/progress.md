@@ -1059,3 +1059,59 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 ### 提交与推送回执
 
 全阶段待推送的 33 个文件已通过已配置凭据的精确值/URL 编码扫描及本地数据、构建产物检查；`git diff --cached --check` 通过。阶段 5 主体提交为 `fc19fa5`（`feat: complete stage 5 model evaluation and evidence report`），包含 `56210b8` 的初次试跑和 `86d129b` 的唯一业务元数据修正/冻结配置。`git push origin main` 成功，远端从 `6155658` 更新为 `fc19fa5`；`git ls-remote` 确认完整提交号 `fc19fa570e884dffe4499b34eddcb202712541e3` 与本地一致。换行复现修正、最终 111 项验收及本段回执随后单独提交；原始模型评测文件未改写。
+
+---
+
+## 阶段 6：本地交付与面试材料（2026-10-08，Asia/Hong_Kong）
+
+### 已实现与完成范围
+
+- Compose 四服务 db/init/api/web，另有显式 checks profile；固定基础镜像版本、健康依赖、单次迁移/种子/checkpoint。新项目 `shoplens-stage6` 首次创建空卷，独立于本机 55432 数据库；金额、指标、原始数据、模型生产提示词和业务查询功能没有变更。
+- init 支持仅环境凭据；空库灌固定种子，已有库只检查，迁移失败或参考核对失败阻断启动。API 无 admin 凭据、无宿主 .env/原始记录/评测答案，app/reader 分离，Python 非 root。/readyz 用 app 并报告 query_service_ready，容器检查真实就绪。
+- README、架构/ER/指标导航、部署与成本/限制说明、三分钟演示、实际截图、一段简历描述和五个面试问题。HTTP 到 SQL 的八步走读在 docs/architecture.md，第三方和项目职责分别列明。
+- 独立浏览器采集与原始记录评分；本地显式真实模型 API 包装原生产适配器，沿用阶段 5 预算账本，每次调用预留 Token，额外上限 20 次，未注入对照示例。
+- 首次构建实际报告 source-map-js 1.2.1 的开发依赖漏洞，锁文件仅升级到 1.2.2。npm ci 和完整 npm audit 复验为 0 项，未扩大为整个镜像/系统安全结论。
+
+### 实际命令与结果
+
+所有 PostgreSQL/浏览器/Docker 命令在本机提升权限执行；默认沙箱 TCP/临时目录限制沿用此前环境记录。
+
+| 命令 / 检查 | 结果 |
+|---|---|
+| git fetch origin / git status | PASS：从 c461fd1 的干净 main 开始，与远端一致 |
+| docker version / docker info | 初次无 Linux engine 管道；docker desktop start --timeout 45 后恢复，Engine 29.8.2 / Linux，Compose 5.5.1 |
+| python scripts/compose_env.py / compose config --quiet | PASS：生成独立忽略凭据文件，静默校验，不输出密码 |
+| docker compose --env-file .local/compose.env --profile checks build | PASS：Python 3.13.12、Node 22.16.0、Nginx 1.28.0，锁定依赖在 Linux 真实安装与前端构建成功 |
+| docker compose -p shoplens-stage6 --env-file .local/compose.env up -d db init | PASS：创建新卷，43 商品/3000 订单/5641 明细/685 退款；迁移、80 Python/SQL 与14手算参考检查、checkpoint 成功 |
+| compose -p shoplens-stage6 ... --profile checks run --rm --no-deps checks | PASS：容器内 18 项真实 PostgreSQL 集成测试，含权限、时区、超时、截断、图恢复、会话归属 |
+| checks python scripts/demo_sql_guard.py | PASS：DROP、原表 SELECT *、pg_sleep 均拒绝；拒绝后批准视图行数未变 |
+| compose ... up -d --wait --wait-timeout 120 | PASS：db/api/web healthy，init exit 0，仅 127.0.0.1:5173 发布 |
+| node e2e/delivery.mjs + check_delivery.py | PASS：容器离线模型、真实 PostgreSQL，4场景+历史刷新/会话隔离=5/5；第一次采集脚本额外 GET 与页面初始 GET 竞态造成 CSRF 拒绝，修正采集初始化后通过，产品逻辑未改 |
+| delivery_api.py --real-model --budget .local/eval-budget-20261008.json + Vite 代理18006 + delivery.mjs --real-model | PASS：Windows/Edge 实际页面→HTTP→生产模型→受限SQL→真实PostgreSQL；独立原始记录评分 5/5，未模拟业务响应 |
+| python scripts/check_container_restart.py --project shoplens-stage6 | PASS：实际 down/up 重建容器，保留卷；同 Cookie 访问已完成结果/历史，report 和模型调用数相同，init 未重灌 |
+| python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd | PASS=10 / FAIL=0 / NOT_RUN=2，退出0：93离线+18真实PG=111测试、离线图/协议、参考/评测、前端构建和完整浏览器回归通过 |
+| 精选镜像布尔审计 | PASS：admin_password_absent/env_absent/eval_answers_absent/raw_records_absent 均true，app/reader密码配置true |
+
+统一验收前设置 npm 目录到 PATH、PYTHONUTF8=1，并停止临时真实 API/Vite 以释放单进程锁及5173。真实模型冒烟的两项 NOT_RUN 为默认未加 --real-model；本阶段另行显式验证浏览器链路，阶段 5 的真实图/协议证据仍保留，未再次花费调用重跑完整评测。
+
+### 真实模型与演示证据
+
+- deepseek-chat、温度0、网络自动重试0，沿生产默认一次修复。normal 2次/2346Token；clarify 3次/3665Token；refund 2次/2323Token；blocked 1次/1318Token。共 **8次/9652Token**，无未知usage保留。账本累计 **580次/676213Token**，上限800次/200万，0在途/未知预留。
+- 渠道实付：广告55301.29元、站外59895.61元、自然61590.70元；9月成功退款10456.25元；与原始记录独立计算一致。写操作在规划阶段 rejected，事件中没有 execute；终端SQL拦截是另一项实际执行器证据。
+- 页面采集原始JSON和独立评分存 docs/evidence/stage6-*-browser.json 与 *-summary.json；截图存 docs/assets/stage6-*.png，已逐张检查，无Key/Cookie。原始截图为真实结果，未重绘/静态mock。
+
+### 未执行、限制与未完成
+
+- **容器可用：已验证** Windows Docker Desktop 的 Linux 镜像、新卷首次启动、离线页面和保留卷重建。未验证 macOS/Linux 宿主、ARM64、容器中真实模型联网、其他浏览器或镜像漏洞完整扫描。
+- **真实模型链路：已验证** 本机API/Edge的上述四固定场景；模型质量仍采用阶段5完整失败报告，不能从四题外推。产品默认没有评测对照示例；总体客单价/部分Top N/超长区间等已知失败保留。
+- **公网可用：未执行**；默认本地交付范围已完成。没有域名/HTTPS、正式账号、多副本队列、负载SLA、真实数据接入或备份恢复演练，未购买服务。
+- 费用单价仍未核实，只报告Token；镜像标签非digest锁定、Python lock无wheel哈希，未宣称二进制完全复现。大图表chunk告警沿用，功能构建通过。
+- 当前环境阻塞已解除：Docker引擎可启动，npm本地工具可用，Key可用，真实PG可用；普通沙箱网络限制需使用已授权的提升权限运行。
+
+### 下一步与交接
+
+计划内阶段0–6的本地交付已完成。下一步由用户选择亲自按三分钟脚本演示/走读，或另立任务优化模型质量；优化应声明原冻结集已曝光，并设计新的保留题，不能把现有冻结题重复调优称盲测。公网部署仅在用户提出目标后推进。
+
+### 提交与推送
+
+本阶段验收已通过；提交与远端确认回执将在实际推送成功后追加，不提前声明已推送。

@@ -1,0 +1,21 @@
+# Build context contains only tracked source needed by explicit COPY instructions.
+.git
+.env
+.env.*
+!.env.example
+.local
+.venv
+.agents
+.codex
+.workbuddy
+**/__pycache__
+**/*.pyc
+**/node_modules
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+.pytest_cache
+.ruff_cache
+*.log
+docs/assets
+evals/runs

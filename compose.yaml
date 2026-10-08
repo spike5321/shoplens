@@ -1,0 +1,97 @@
+name: shoplens
+
+x-database: &database
+  SHOPLENS_PG_HOST: db
+  SHOPLENS_PG_PORT: "5432"
+  SHOPLENS_PG_DB: shoplens
+  SHOPLENS_PG_APP_USER: shoplens_app
+  SHOPLENS_PG_APP_PASSWORD: ${SHOPLENS_PG_APP_PASSWORD:?Run scripts/compose_env.py first}
+  SHOPLENS_PG_READER_USER: analytics_reader
+  SHOPLENS_PG_READER_PASSWORD: ${SHOPLENS_PG_READER_PASSWORD:?Run scripts/compose_env.py first}
+
+services:
+  db:
+    image: postgres:18.1-bookworm
+    environment:
+      POSTGRES_DB: shoplens
+      POSTGRES_PASSWORD: ${SHOPLENS_PG_ADMIN_PASSWORD:?Run scripts/compose_env.py first}
+      TZ: UTC
+    command: ["postgres", "-c", "timezone=UTC"]
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shoplens"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  init:
+    build:
+      context: .
+      dockerfile: deploy/backend.Dockerfile
+      target: init
+    environment:
+      <<: *database
+      SHOPLENS_PG_ADMIN_PASSWORD: ${SHOPLENS_PG_ADMIN_PASSWORD}
+      SHOPLENS_MODEL_PROVIDER: offline
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/backend.Dockerfile
+      target: api
+    environment:
+      <<: *database
+      SHOPLENS_ENV: local
+      SHOPLENS_MODEL_PROVIDER: ${SHOPLENS_MODEL_PROVIDER:-offline}
+      SHOPLENS_DEEPSEEK_API_KEY: ${SHOPLENS_DEEPSEEK_API_KEY:-}
+      SHOPLENS_DEEPSEEK_MODEL: deepseek-chat
+      SHOPLENS_DEEPSEEK_BASE_URL: https://api.deepseek.com/v1
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:8000/readyz',timeout=4)); assert r['database']['status']=='ok' and r['query_service_ready']"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/frontend.Dockerfile
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  checks:
+    profiles: ["checks"]
+    build:
+      context: .
+      dockerfile: deploy/backend.Dockerfile
+      target: checks
+    environment:
+      <<: *database
+      SHOPLENS_PG_ADMIN_PASSWORD: ${SHOPLENS_PG_ADMIN_PASSWORD}
+      SHOPLENS_MODEL_PROVIDER: offline
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:

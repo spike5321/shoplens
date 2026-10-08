@@ -1,0 +1,33 @@
+{
+  "provider": "offline",
+  "checks": [
+    {
+      "case": "normal",
+      "status": "PASS",
+      "model_calls": 2,
+      "tokens": null
+    },
+    {
+      "case": "clarify",
+      "status": "PASS",
+      "model_calls": 3,
+      "tokens": null
+    },
+    {
+      "case": "refund",
+      "status": "PASS",
+      "model_calls": 2,
+      "tokens": null
+    },
+    {
+      "case": "blocked",
+      "status": "PASS",
+      "model_calls": 1,
+      "tokens": null
+    },
+    {
+      "case": "history_refresh_isolation",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "provider": "deepseek",
+  "checks": [
+    {
+      "case": "normal",
+      "status": "PASS",
+      "model_calls": 2,
+      "tokens": {
+        "input_tokens": 2106,
+        "total_tokens": 2346,
+        "output_tokens": 240
+      }
+    },
+    {
+      "case": "clarify",
+      "status": "PASS",
+      "model_calls": 3,
+      "tokens": {
+        "input_tokens": 3328,
+        "total_tokens": 3665,
+        "output_tokens": 337
+      }
+    },
+    {
+      "case": "refund",
+      "status": "PASS",
+      "model_calls": 2,
+      "tokens": {
+        "input_tokens": 2111,
+        "total_tokens": 2323,
+        "output_tokens": 212
+      }
+    },
+    {
+      "case": "blocked",
+      "status": "PASS",
+      "model_calls": 1,
+      "tokens": {
+        "input_tokens": 1213,
+        "total_tokens": 1318,
+        "output_tokens": 105
+      }
+    },
+    {
+      "case": "history_refresh_isolation",
+      "status": "PASS"
+    }
+  ]
+}

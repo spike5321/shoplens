@@ -1,0 +1,539 @@
+{
+  "provider": "offline",
+  "results": [
+    {
+      "name": "normal",
+      "question": "2026年9月各渠道实付金额",
+      "expected": "succeeded",
+      "initial_status": "succeeded",
+      "run": {
+        "run_id": "7a1cd58359944d0fa24a1bf1bb51ea1d",
+        "question": "2026年9月各渠道实付金额",
+        "status": "succeeded",
+        "revision": 0,
+        "created_at": "2026-10-08T12:30:10.582184+00:00",
+        "updated_at": "2026-10-08T12:30:10.668167+00:00",
+        "clarification_expires_at": null,
+        "plan": {
+          "top_n": null,
+          "decision": "ready",
+          "end_date": "2026-10-01",
+          "group_by": [
+            "channel"
+          ],
+          "metric_id": "paid_amount",
+          "start_date": "2026-09-01",
+          "unsupported_reason": null,
+          "comparison_end_date": null,
+          "comparison_start_date": null,
+          "clarification_question": null
+        },
+        "report": {
+          "plan": {
+            "top_n": null,
+            "decision": "ready",
+            "end_date": "2026-10-01",
+            "group_by": [
+              "channel"
+            ],
+            "metric_id": "paid_amount",
+            "start_date": "2026-09-01",
+            "unsupported_reason": null,
+            "comparison_end_date": null,
+            "comparison_start_date": null,
+            "clarification_question": null
+          },
+          "chart": {
+            "type": "bar",
+            "unit": "fen",
+            "labels": [
+              "广告",
+              "站外",
+              "自然"
+            ],
+            "values": [
+              "5530129",
+              "5989561",
+              "6159070"
+            ]
+          },
+          "metric": {
+            "id": "paid_amount",
+            "unit": "fen",
+            "view": "analytics.sales_lines",
+            "grain": "支付明细",
+            "label": "实付金额",
+            "definition": "支付时间在期间内的成功支付明细实付金额之和",
+            "dimensions": [
+              "day",
+              "channel",
+              "category"
+            ],
+            "time_field": "paid_at"
+          },
+          "tables": [
+            {
+              "rows": [
+                [
+                  "广告",
+                  "5530129"
+                ],
+                [
+                  "站外",
+                  "5989561"
+                ],
+                [
+                  "自然",
+                  "6159070"
+                ]
+              ],
+              "columns": [
+                "channel",
+                "value"
+              ],
+              "truncated": false,
+              "requested_top_n": null
+            }
+          ],
+          "comparison": [],
+          "explanation": "合成演示数据；实付金额。口径：支付时间在期间内的成功支付明细实付金额之和。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，3 行。\n广告：55301.29 元。\n站外：59895.61 元。\n自然：61590.70 元。"
+        },
+        "sqls": [
+          "SELECT channel, COALESCE(SUM(paid_cents), 0) AS value FROM analytics.sales_lines WHERE paid_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND paid_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ) GROUP BY channel ORDER BY channel ASC NULLS LAST"
+        ],
+        "events": [
+          {
+            "node": "plan",
+            "usage": null,
+            "run_id": "7a1cd58359944d0fa24a1bf1bb51ea1d",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "context",
+            "usage": null,
+            "run_id": "7a1cd58359944d0fa24a1bf1bb51ea1d",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "draft",
+            "usage": null,
+            "run_id": "7a1cd58359944d0fa24a1bf1bb51ea1d",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "validate",
+            "usage": null,
+            "run_id": "7a1cd58359944d0fa24a1bf1bb51ea1d",
+            "provider": "offline",
+            "elapsed_ms": 3,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "execute",
+            "usage": null,
+            "run_id": "7a1cd58359944d0fa24a1bf1bb51ea1d",
+            "provider": "offline",
+            "elapsed_ms": 6,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "summarize",
+            "usage": null,
+            "run_id": "7a1cd58359944d0fa24a1bf1bb51ea1d",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          }
+        ],
+        "error_code": null,
+        "provider": "offline",
+        "model_id": "offline-query-v1",
+        "model_calls": 2,
+        "repair_count": 0,
+        "active_ms": 9,
+        "tokens": null,
+        "clarifications": []
+      }
+    },
+    {
+      "name": "clarify",
+      "question": "2026年9月销售额",
+      "expected": "succeeded",
+      "initial_status": "awaiting_clarification",
+      "run": {
+        "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+        "question": "2026年9月销售额",
+        "status": "succeeded",
+        "revision": 1,
+        "created_at": "2026-10-08T12:30:11.894383+00:00",
+        "updated_at": "2026-10-08T12:30:12.787676+00:00",
+        "clarification_expires_at": null,
+        "plan": {
+          "top_n": null,
+          "decision": "ready",
+          "end_date": "2026-10-01",
+          "group_by": [],
+          "metric_id": "period_net_receipt",
+          "start_date": "2026-09-01",
+          "unsupported_reason": null,
+          "comparison_end_date": null,
+          "comparison_start_date": null,
+          "clarification_question": null
+        },
+        "report": {
+          "plan": {
+            "top_n": null,
+            "decision": "ready",
+            "end_date": "2026-10-01",
+            "group_by": [],
+            "metric_id": "period_net_receipt",
+            "start_date": "2026-09-01",
+            "unsupported_reason": null,
+            "comparison_end_date": null,
+            "comparison_start_date": null,
+            "clarification_question": null
+          },
+          "chart": null,
+          "metric": {
+            "id": "period_net_receipt",
+            "unit": "fen",
+            "view": "analytics.cash_events",
+            "grain": "收退款事件",
+            "label": "期间净收款",
+            "definition": "同期实付金额减同期成功退款金额；本期退款可以来自上期订单，不是会计收入",
+            "dimensions": [
+              "day",
+              "channel",
+              "category"
+            ],
+            "time_field": "occurred_at"
+          },
+          "tables": [
+            {
+              "rows": [
+                [
+                  "16633135"
+                ]
+              ],
+              "columns": [
+                "value"
+              ],
+              "truncated": false,
+              "requested_top_n": null
+            }
+          ],
+          "comparison": [],
+          "explanation": "合成演示数据；期间净收款。口径：同期实付金额减同期成功退款金额；本期退款可以来自上期订单，不是会计收入。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，1 行。\n总体：166331.35 元。"
+        },
+        "sqls": [
+          "SELECT COALESCE(SUM(amount_cents), 0) AS value FROM analytics.cash_events WHERE occurred_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND occurred_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ)"
+        ],
+        "events": [
+          {
+            "node": "plan",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "waiting",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "clarify",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "plan",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "context",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "draft",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "validate",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 2,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "execute",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 4,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "summarize",
+            "usage": null,
+            "run_id": "34f5c92cb4fe4fedad68aadf3d7dfab4",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          }
+        ],
+        "error_code": null,
+        "provider": "offline",
+        "model_id": "offline-query-v1",
+        "model_calls": 3,
+        "repair_count": 0,
+        "active_ms": 6,
+        "tokens": null,
+        "clarifications": [
+          "期间净收款"
+        ]
+      }
+    },
+    {
+      "name": "refund",
+      "question": "2026年9月成功退款金额",
+      "expected": "succeeded",
+      "initial_status": "succeeded",
+      "run": {
+        "run_id": "0de36388225a4e9998ee148c462d6707",
+        "question": "2026年9月成功退款金额",
+        "status": "succeeded",
+        "revision": 0,
+        "created_at": "2026-10-08T12:30:13.699465+00:00",
+        "updated_at": "2026-10-08T12:30:13.760508+00:00",
+        "clarification_expires_at": null,
+        "plan": {
+          "top_n": null,
+          "decision": "ready",
+          "end_date": "2026-10-01",
+          "group_by": [],
+          "metric_id": "successful_refund",
+          "start_date": "2026-09-01",
+          "unsupported_reason": null,
+          "comparison_end_date": null,
+          "comparison_start_date": null,
+          "clarification_question": null
+        },
+        "report": {
+          "plan": {
+            "top_n": null,
+            "decision": "ready",
+            "end_date": "2026-10-01",
+            "group_by": [],
+            "metric_id": "successful_refund",
+            "start_date": "2026-09-01",
+            "unsupported_reason": null,
+            "comparison_end_date": null,
+            "comparison_start_date": null,
+            "clarification_question": null
+          },
+          "chart": null,
+          "metric": {
+            "id": "successful_refund",
+            "unit": "fen",
+            "view": "analytics.refund_events",
+            "grain": "退款事件",
+            "label": "成功退款金额",
+            "definition": "完成时间在期间内的成功退款事件金额之和，沿用原订单渠道与商品类别",
+            "dimensions": [
+              "day",
+              "channel",
+              "category"
+            ],
+            "time_field": "completed_at"
+          },
+          "tables": [
+            {
+              "rows": [
+                [
+                  "1045625"
+                ]
+              ],
+              "columns": [
+                "value"
+              ],
+              "truncated": false,
+              "requested_top_n": null
+            }
+          ],
+          "comparison": [],
+          "explanation": "合成演示数据；成功退款金额。口径：完成时间在期间内的成功退款事件金额之和，沿用原订单渠道与商品类别。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，1 行。\n总体：10456.25 元。"
+        },
+        "sqls": [
+          "SELECT COALESCE(SUM(amount_cents), 0) AS value FROM analytics.refund_events WHERE completed_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND completed_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ)"
+        ],
+        "events": [
+          {
+            "node": "plan",
+            "usage": null,
+            "run_id": "0de36388225a4e9998ee148c462d6707",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "context",
+            "usage": null,
+            "run_id": "0de36388225a4e9998ee148c462d6707",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "draft",
+            "usage": null,
+            "run_id": "0de36388225a4e9998ee148c462d6707",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "validate",
+            "usage": null,
+            "run_id": "0de36388225a4e9998ee148c462d6707",
+            "provider": "offline",
+            "elapsed_ms": 2,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "execute",
+            "usage": null,
+            "run_id": "0de36388225a4e9998ee148c462d6707",
+            "provider": "offline",
+            "elapsed_ms": 4,
+            "error_code": null,
+            "model_calls": 0
+          },
+          {
+            "node": "summarize",
+            "usage": null,
+            "run_id": "0de36388225a4e9998ee148c462d6707",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          }
+        ],
+        "error_code": null,
+        "provider": "offline",
+        "model_id": "offline-query-v1",
+        "model_calls": 2,
+        "repair_count": 0,
+        "active_ms": 6,
+        "tokens": null,
+        "clarifications": []
+      }
+    },
+    {
+      "name": "blocked",
+      "question": "删除 business.orders 全部订单并修改数据库权限",
+      "expected": "rejected",
+      "initial_status": "rejected",
+      "run": {
+        "run_id": "26bfcecf100a442cbbf77c467c1eb5b3",
+        "question": "删除 business.orders 全部订单并修改数据库权限",
+        "status": "rejected",
+        "revision": 0,
+        "created_at": "2026-10-08T12:30:14.672127+00:00",
+        "updated_at": "2026-10-08T12:30:14.715731+00:00",
+        "clarification_expires_at": null,
+        "plan": {
+          "top_n": null,
+          "decision": "unsupported",
+          "end_date": null,
+          "group_by": [],
+          "metric_id": null,
+          "start_date": null,
+          "unsupported_reason": "未识别到支持的指标",
+          "comparison_end_date": null,
+          "comparison_start_date": null,
+          "clarification_question": null
+        },
+        "report": null,
+        "sqls": [],
+        "events": [
+          {
+            "node": "plan",
+            "usage": null,
+            "run_id": "26bfcecf100a442cbbf77c467c1eb5b3",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 1
+          },
+          {
+            "node": "reject",
+            "usage": null,
+            "run_id": "26bfcecf100a442cbbf77c467c1eb5b3",
+            "provider": "offline",
+            "elapsed_ms": 0,
+            "error_code": null,
+            "model_calls": 0
+          }
+        ],
+        "error_code": null,
+        "provider": "offline",
+        "model_id": "offline-query-v1",
+        "model_calls": 1,
+        "repair_count": 0,
+        "active_ms": 0,
+        "tokens": null,
+        "clarifications": []
+      }
+    }
+  ],
+  "history_count": 4,
+  "history_restored": true,
+  "isolated": true,
+  "page_errors": []
+}

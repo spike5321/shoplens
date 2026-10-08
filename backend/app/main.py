@@ -81,12 +81,13 @@ def readyz() -> dict[str, object]:
     settings = get_settings()
     result: dict[str, object] = {
         "service": "shoplens-api",
+        "query_service_ready": getattr(app.state, "workspace", None) is not None,
         "database": {
             "host": settings.pg_host,
             "port": settings.pg_port,
             "dbname": settings.pg_db,
             # 去掉密码的连接串，可以安全展示
-            "dsn": settings.safe_dsn("admin"),
+            "dsn": settings.safe_dsn("app"),
             "status": "unknown",
             "latency_ms": None,
             "server_version": None,
@@ -99,7 +100,7 @@ def readyz() -> dict[str, object]:
         import psycopg
 
         with (
-            psycopg.connect(settings.dsn("admin"), connect_timeout=3) as conn,
+            psycopg.connect(settings.dsn("app"), connect_timeout=3) as conn,
             conn.cursor() as cur,
         ):
             cur.execute("SET statement_timeout = 3000")

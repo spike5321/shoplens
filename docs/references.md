@@ -14,7 +14,7 @@
   1. 在本文记录来源仓库、commit、文件路径、许可类型；
   2. 在源文件顶部保留原始版权声明；
   3. 在本文写清「我改了什么、为什么改、哪条测试证明改完是对的」。
-- 到目前为止（阶段 0），**没有复制任何第三方代码**。下面的条目全部是「阅读学习」状态。
+- 阶段 0 时没有复制第三方代码；后续实际使用官方接口的范围见各阶段追加记录。大型参考仓库的未开始状态仍保留，不据此声称审计或复用。
 
 ## 2. 学习清单与进度
 
@@ -78,3 +78,12 @@
 - 尝试访问 [DeepSeek 官方价格页](https://api-docs.deepseek.com/quick_start/pricing)，本次读取超时，未核实 2026-10-08 适用价格。不填人民币费用，不使用未核实单价。
 
 评测题、原始记录参考计算、评分、预算账本和报告均由项目自行实现，没有复制第三方评测题或标准答案。
+
+## 8. 阶段 6 交付依据（2026-10-08）
+
+- [Docker Compose 启动顺序](https://docs.docker.com/compose/how-tos/startup-order)：数据库用 `service_healthy`，迁移/种子用 `service_completed_successfully`；项目编写实际 Compose、初始化脚本和检查命令，没有复制第三方项目部署文件。
+- [Docker Desktop CLI](https://docs.docker.com/desktop/features/desktop-cli/)：本机用 `docker desktop start --timeout 45` 启动已安装的 Linux 引擎，实际构建与新数据卷验收见 progress。
+- [PostgreSQL 官方镜像](https://hub.docker.com/_/postgres)：18.x 数据卷挂载 `/var/lib/postgresql`；固定 `18.1-bookworm`，数据库时区 UTC，查询日期按上海边界显式解释。
+- [source-map-js 1.2.2 修复](https://github.com/7rulnik/source-map-js/releases/tag/v1.2.2) 与 [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q)：首次构建 npm audit 报告该间接开发依赖高危问题，锁文件仅更新 1.2.1 → 1.2.2；npm ci/audit 复验 0 项。未扩大为全镜像安全审计结论。
+
+项目依赖的框架/数据库/图表/测试库和基础镜像仍属第三方；架构说明、演示采集、评分、初始化和面试材料是项目源码。没有复制 WrenAI/Vanna 的业务实现或界面，也未完成其源码审计。

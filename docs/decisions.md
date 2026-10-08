@@ -379,3 +379,13 @@ net_receipt_cents.invoke({"paid_cents": 100, "currency": "CNY"})   # 不报错�
 - ECharts 6.1.0 按需加载固定 bar/line 组件。表格/卡片金额用 BigInt 保留分精度；图表坐标转 JS 数值，精确答案以表格/API 十进制字符串为准。当前主 JS 约 236 kB、图表约 517 kB（压缩前）；图表 chunk 仍触发 Vite 500 kB 提示，未改变警告阈值。
 - Playwright 1.63.0 在本机 Edge 无头模式验证真实 PostgreSQL 和后端进程重启，不 mock 业务 API。锁测试的 SQL timeout 设为 15 秒以留出终止窗口；产品默认仍是 3 秒，原有真实数据库超时测试继续验证。截图/报告都在忽略目录，测试 Cookie 经 stdin 清理，不写文件或命令行。
 - 当前没有真实 Key，阶段 4 浏览器只证明产品流程与持久化，真实模型行为/质量、Linux/Chromium、容器和公网发布都未验证。
+
+## 9. 阶段 6 本地容器交付（2026-10-08）
+
+- 本机现在已有 Docker Desktop；启动 Linux 引擎后真实构建成功，历史“无 Docker”仅描述当时环境。Python 3.13.12、Node 22.16.0、Nginx 1.28.0、PostgreSQL 18.1 固定标签；本机开发路径保留，容器用独立命名卷，没有发布数据库端口。
+- init 单独持有 admin，API 只注入 app/reader，`/readyz` 改用 app，并增加 `query_service_ready` 布尔值。健康检查同时检查连接与 Workspace，避免仅数据库连通却工作台不可用。运行 API 镜像只复制 app 和指标 YAML，拒绝把 evals、原始记录、宿主 `.env` 放入镜像。
+- 初始化复用 Alembic、setup_db、seed_data、check_reference 和 checkpoint setup。空库灌种子，已有库仅检查，不清空数据或历史；setup_db 支持环境凭据且无 `.env` 的容器，不再要求先执行 Windows pg.ps1。
+- 完整 npm audit 发现 source-map-js 间接开发依赖问题，锁文件仅将其 1.2.1 升到 1.2.2；未改业务页面逻辑。复验结果见进度，不把 npm audit 当完整镜像扫描。
+- `delivery_api.py` 仅是本地显式验收入口，包装原本生产模型的调用预算；不把阶段 5 对照示例带到产品。逐次复用原有预算账本，单进程额外最多 20 次；阶段 6 实际 8 次、9652 Token。运行流程不新增模型产品选项。
+- 实际截图采集独立于日常浏览器回归。采集脚本先在同一浏览器 context 建 Cookie，再加载页面，避免其额外 GET 与页面首次 GET 并发而覆盖会话。没有为修正采集脚本修改产品逻辑。
+- 当前交付仅限 localhost HTTP、单 API 进程、合成数据。公网、HTTPS、正式登录、多副本队列、备份/负载测试另行计划，未自行购买服务。

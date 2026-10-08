@@ -11,6 +11,7 @@ import json
 
 from fastapi.testclient import TestClient
 
+from app.config import get_settings
 from app.main import app
 
 client = TestClient(app)
@@ -38,7 +39,7 @@ def test_readyz_reports_a_real_database_status():
     assert resp.status_code == 200
     db = resp.json()["database"]
     assert db["status"] in {"ok", "unreachable"}
-    assert db["port"] == 55432
+    assert db["port"] == get_settings().pg_port
 
     if db["status"] == "ok":
         # 真的连上了才允许有这些字段
@@ -51,6 +52,6 @@ def test_readyz_reports_a_real_database_status():
 
 def test_readyz_never_leaks_the_database_password():
     raw = client.get("/readyz").text
-    assert "postgresql://postgres:***@" in raw, "连接串必须去掉密码后再返回"
+    assert get_settings().safe_dsn("app") in raw, "连接串必须去掉密码后再返回"
     # 任何形如 ://user:password@ 的片段都不允许出现
     assert json.dumps(raw).count("password") == 0 or ":***@" in raw

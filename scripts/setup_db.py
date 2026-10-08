@@ -22,15 +22,16 @@ from app.config import get_settings  # noqa: E402
 def ensure_roles() -> None:
     settings = get_settings()
     env_path = ROOT / ".env"
-    if not env_path.exists():
-        raise RuntimeError(".env missing: run scripts/pg.ps1 init first")
-    current = dotenv_values(env_path)
+    current = dotenv_values(env_path) if env_path.exists() else {}
     credentials = {}
-    for role, key in (
-        (settings.pg_app_user, "SHOPLENS_PG_APP_PASSWORD"),
-        (settings.pg_reader_user, "SHOPLENS_PG_READER_PASSWORD"),
+    for role, key, configured in (
+        (settings.pg_app_user, "SHOPLENS_PG_APP_PASSWORD", settings.pg_app_password),
+        (settings.pg_reader_user, "SHOPLENS_PG_READER_PASSWORD", settings.pg_reader_password),
     ):
-        credentials[role] = (key, current.get(key) or secrets.token_urlsafe(24))
+        password = configured.get_secret_value()
+        if not password and not env_path.exists():
+            raise RuntimeError("Provide app/reader passwords through environment or a local .env")
+        credentials[role] = (key, password or secrets.token_urlsafe(24))
     with psycopg.connect(settings.dsn("admin"), autocommit=True) as conn:
         for role, (_, password) in credentials.items():
             exists = conn.execute("SELECT 1 FROM pg_roles WHERE rolname = %s", (role,)).fetchone()
@@ -47,7 +48,7 @@ def ensure_roles() -> None:
                     )
                 )
     for _, (key, password) in credentials.items():
-        if current.get(key) != password:
+        if env_path.exists() and current.get(key) != password:
             set_key(str(env_path), key, password, quote_mode="never")
 
 
@@ -88,7 +89,7 @@ def main() -> None:
     config = Config(str(ROOT / "alembic.ini"))
     command.upgrade(config, "head")
     grant_access()
-    print("Database roles, migration, and grants ready. Credentials remain in .env.")
+    print("Database roles, migration, and grants ready. Credentials are not logged.")
 
 
 if __name__ == "__main__":
