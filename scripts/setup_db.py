@@ -76,6 +76,11 @@ def grant_access() -> None:
                 sql.Identifier(settings.pg_app_user)
             )
         )
+        conn.execute(
+            sql.SQL(
+                "GRANT SELECT, INSERT, UPDATE, DELETE ON app_state.sessions, app_state.runs, app_state.events TO {}"
+            ).format(sql.Identifier(settings.pg_app_user))
+        )
 
 
 def main() -> None:
