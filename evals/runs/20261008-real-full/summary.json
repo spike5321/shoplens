@@ -1,0 +1,358 @@
+{
+  "completed_at": "2026-10-08T11:53:24.929605+00:00",
+  "requested": 240,
+  "completed": 240,
+  "constraints_passed": 24,
+  "constraints_total": 24,
+  "metrics": {
+    "schema/dev": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 4,
+        "total": 36,
+        "rate": 0.1111111111111111
+      },
+      "all_behavior_correct": {
+        "passed": 8,
+        "total": 40,
+        "rate": 0.2
+      },
+      "sql_success_answerable": {
+        "passed": 4,
+        "total": 36,
+        "rate": 0.1111111111111111
+      },
+      "sql_success_when_attempted": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 3,
+        "total": 4,
+        "rate": 0.75
+      },
+      "rejection_correct": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "false_rejections": 0,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "p50_ms": 1896,
+      "p95_ms": 2759,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 78,
+      "api_calls": 78,
+      "known_tokens": {
+        "input_tokens": 59184,
+        "output_tokens": 9657,
+        "total_tokens": 68841
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {
+        "plan_mismatch": 28,
+        "unsupported_sql": 2,
+        "invalid_sql": 1,
+        "model_protocol_error": 1
+      }
+    },
+    "schema/frozen": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 2,
+        "total": 35,
+        "rate": 0.05714285714285714
+      },
+      "all_behavior_correct": {
+        "passed": 4,
+        "total": 40,
+        "rate": 0.1
+      },
+      "sql_success_answerable": {
+        "passed": 2,
+        "total": 35,
+        "rate": 0.05714285714285714
+      },
+      "sql_success_when_attempted": {
+        "passed": 2,
+        "total": 2,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 4,
+        "total": 5,
+        "rate": 0.8
+      },
+      "rejection_correct": {
+        "passed": 2,
+        "total": 5,
+        "rate": 0.4
+      },
+      "false_rejections": 0,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "p50_ms": 2013,
+      "p95_ms": 3544,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 79,
+      "api_calls": 79,
+      "known_tokens": {
+        "input_tokens": 60705,
+        "output_tokens": 10680,
+        "total_tokens": 71385
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {
+        "plan_mismatch": 23,
+        "invalid_sql": 8,
+        "model_protocol_error": 5
+      }
+    },
+    "semantic/dev": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 32,
+        "total": 36,
+        "rate": 0.8888888888888888
+      },
+      "all_behavior_correct": {
+        "passed": 36,
+        "total": 40,
+        "rate": 0.9
+      },
+      "sql_success_answerable": {
+        "passed": 32,
+        "total": 36,
+        "rate": 0.8888888888888888
+      },
+      "sql_success_when_attempted": {
+        "passed": 32,
+        "total": 32,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "rejection_correct": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "false_rejections": 1,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "p50_ms": 1926,
+      "p95_ms": 2981,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 79,
+      "api_calls": 79,
+      "known_tokens": {
+        "input_tokens": 92167,
+        "output_tokens": 9994,
+        "total_tokens": 102161
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {
+        "plan_mismatch": 3,
+        "false_rejection": 1
+      }
+    },
+    "semantic/frozen": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 31,
+        "total": 35,
+        "rate": 0.8857142857142857
+      },
+      "all_behavior_correct": {
+        "passed": 35,
+        "total": 40,
+        "rate": 0.875
+      },
+      "sql_success_answerable": {
+        "passed": 31,
+        "total": 35,
+        "rate": 0.8857142857142857
+      },
+      "sql_success_when_attempted": {
+        "passed": 31,
+        "total": 31,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 5,
+        "total": 5,
+        "rate": 1.0
+      },
+      "rejection_correct": {
+        "passed": 4,
+        "total": 5,
+        "rate": 0.8
+      },
+      "false_rejections": 0,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "p50_ms": 1884,
+      "p95_ms": 4377,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 83,
+      "api_calls": 83,
+      "known_tokens": {
+        "input_tokens": 98023,
+        "output_tokens": 10428,
+        "total_tokens": 108451
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {
+        "invalid_sql": 1,
+        "plan_mismatch": 3,
+        "model_protocol_error": 1
+      }
+    },
+    "repair/dev": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 32,
+        "total": 36,
+        "rate": 0.8888888888888888
+      },
+      "all_behavior_correct": {
+        "passed": 36,
+        "total": 40,
+        "rate": 0.9
+      },
+      "sql_success_answerable": {
+        "passed": 32,
+        "total": 36,
+        "rate": 0.8888888888888888
+      },
+      "sql_success_when_attempted": {
+        "passed": 32,
+        "total": 32,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "rejection_correct": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "false_rejections": 1,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 3,
+        "rate": 0.0
+      },
+      "p50_ms": 1985,
+      "p95_ms": 3057,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 82,
+      "api_calls": 82,
+      "known_tokens": {
+        "input_tokens": 95453,
+        "output_tokens": 10439,
+        "total_tokens": 105892
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {
+        "plan_mismatch": 3,
+        "false_rejection": 1
+      }
+    },
+    "repair/frozen": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 30,
+        "total": 35,
+        "rate": 0.8571428571428571
+      },
+      "all_behavior_correct": {
+        "passed": 34,
+        "total": 40,
+        "rate": 0.85
+      },
+      "sql_success_answerable": {
+        "passed": 30,
+        "total": 35,
+        "rate": 0.8571428571428571
+      },
+      "sql_success_when_attempted": {
+        "passed": 30,
+        "total": 30,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 5,
+        "total": 5,
+        "rate": 1.0
+      },
+      "rejection_correct": {
+        "passed": 4,
+        "total": 5,
+        "rate": 0.8
+      },
+      "false_rejections": 0,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 5,
+        "rate": 0.0
+      },
+      "p50_ms": 1995,
+      "p95_ms": 3757,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 88,
+      "api_calls": 88,
+      "known_tokens": {
+        "input_tokens": 103292,
+        "output_tokens": 11312,
+        "total_tokens": 114604
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {
+        "invalid_sql": 2,
+        "plan_mismatch": 3,
+        "model_protocol_error": 1
+      }
+    }
+  },
+  "budget_after": {
+    "max_calls": 800,
+    "max_tokens": 2000000,
+    "calls": 572,
+    "known_tokens": 666561,
+    "unknown_tokens_reserved": 0,
+    "inflight_reserved": 0
+  }
+}

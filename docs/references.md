@@ -71,3 +71,10 @@
 - [MDN Set-Cookie](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie)：核对 HttpOnly、SameSite、Secure、Path、Max-Age。项目另用 CSRF header 与 Origin 校验，Cookie 原值不进入日志/截图。
 - [Playwright web server](https://playwright.dev/docs/test-webserver) 和 [API testing](https://playwright.dev/docs/api-testing)：测试独占 Vite 服务与独立浏览器 context，各 context 的 request 使用自己的 Cookie；后端子进程由测试显式终止并重启。
 - [ECharts 基础折线图](https://echarts.apache.org/handbook/zh/how-to/chart-types/line/basic-line/)：固定代码把类型化 labels/values 转为 line/bar 配置；未使用模型 JavaScript。版本锁定为 ECharts 6.1.0、Playwright 1.63.0；界面为项目自行实现，没有复制参考仓库界面或业务代码。
+
+## 7. 阶段 5 官方接口核对（2026-10-08）
+
+- [ChatDeepSeek 集成](https://docs.langchain.com/oss/python/integrations/chat/deepseek)：核对 tool calling、结构化输出和 Token usage；沿用锁定版本及 `function_calling/include_raw`，真实查询图冒烟 4/4 通过。评测记录解析失败时仍返回的 usage，不将协议 stub 算作真实模型结果。
+- 尝试访问 [DeepSeek 官方价格页](https://api-docs.deepseek.com/quick_start/pricing)，本次读取超时，未核实 2026-10-08 适用价格。不填人民币费用，不使用未核实单价。
+
+评测题、原始记录参考计算、评分、预算账本和报告均由项目自行实现，没有复制第三方评测题或标准答案。

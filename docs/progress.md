@@ -972,3 +972,85 @@ $env:PYTHONUTF8 = '1'
 待推送差异仅有 `README.md` 和 `docs/progress.md`；已扫描全部已配置凭据的精确值及 URL 编码形式，没有命中，未包含本地数据或构建产物，`git diff --cached --check` 通过。
 
 同步复验文档提交为 `20afb68`（`docs: sync stages 2-4 and record local verification`），包含此前 `a2d2940` 的合并及 `dbb583b` 的本地记录。`git push origin main` 成功，远端从 `de5680b` 更新到 `20afb68`；`git ls-remote --heads origin main` 确认远端完整提交号为 `20afb68ff0e14ff60e9641162d2f8a98b6ed6bd9`，与本地一致。本段回执随后单独提交。
+
+---
+
+## 阶段 5：评测与有证据的改进
+
+实现与验收日期：2026-10-08。用户授权继续阶段 5，并选择阶段累计最多 **800 次 API 调用、200 万总 Token**，到上限停止。真实模型已执行；没有自动进入阶段 6。
+
+### 已实现行为与文件
+
+- `evals/cases.py`：40 道开发题、40 道冻结题，按问法与交互家族隔离；另有 24 条固定非法 SQL。指标和部分 SQL 聚合形状共享，不能外推为陌生任务泛化。
+- `evals/reference.py`：原始记录参考计算，覆盖实际事件分组、独立类别订单去重、跨期退款、空值、精确金额、比率容差及 Top N 并列顺序。评分核对计划和数值，不能只看 SQL 可执行。
+- `evals/models.py`：Schema、指标语义/手写协议示例、增加一次修复三配置，reader/AST/业务形状/超时/行数保护相同。模型输入不包含题库参考计划、标准 SQL、数值答案或评测结果。
+- `.local/eval-budget-20261008.json`：共享持久化预算，包含冒烟。调用前预留、usage 结算；缺 usage 或进程中断保守计入预留，重跑不会重置。账本被忽略提交，预算前后状态保留在 manifest/summary。
+- `evals/runner.py`、`scripts/run_evals.py`：先只读逐行核对真实四表和固定数据快照，再经 reader 执行。全量 JSONL 记录成功、失败、候选 SQL、事件、耗时和每次 API usage；结构化协议失败的已返回 usage 也保留。数据库凭据不进入模型或产物。
+- `evals/freeze.json`：固定题库、提示词与执行/业务校验摘要，改变后运行需明确声明已用于迭代；记录之前是否已有真实冻结结果。完整评测开始前没有执行冻结题，发布后不能再当作未暴露的盲测。
+- `scripts/report_evals.py`、`evals/REPORT.md`、`evals/README.md`：从全部 240 个结果重建报告，包含分母、SQL 成功、澄清/拒绝、错误拒绝、修复、延迟、Token、失败分类、六个开发失败的修改/复测和其他根因证据。
+- `tests/test_stage5_evals.py`：题库隔离、手工样例、错误金额/NULL/顺序/截断拒绝、错误计划、预算重跑，以及五指标多维分组的真实 PostgreSQL 对照。统一验收新增无模型调用的 PostgreSQL 离线评测，静态检查包含 evals。
+
+### 唯一一项开发证据支持的改动
+
+初次 6 道开发题的 Schema 配置全部因无 schema 的视图名被拒；公开 Schema 只写 `sales_lines` 等名称，执行器只允许 `analytics.*`。保存 v1 提交 `56210b8` 后，只将 `backend/app/query_model.py` 的公开 Schema 改为限定名称；所有配置复用同一名称，不放宽校验。修正与冻结版本为 `86d129b`。
+
+同题复测：来源错误全部消除，但基线仍因口径/SQL 形状错误 0/6；semantic 4/6→4/6，repair 5/6→4/6。没有宣称这项修改提升正确率，没有再根据冻结题修改模型或评分规则。错误案例的具体 SQL 与预期见报告。
+
+### 实际命令和结果
+
+本机 PostgreSQL 继续用有本机权限的持续会话运行 `postgres.exe -D D:\Project_02\.local\pgdata -p 55432`。默认受限进程的 pytest 临时目录创建失败；在允许的本机进程环境运行后通过，未将环境失败算作测试通过。
+
+```text
+python scripts/smoke_query_graph.py --real-model
+  normal / clarify / cross_period_refund / unsupported：4/4 通过
+  8 次调用 / 9570 Token（计入共享预算）
+python -m pytest tests/test_stage5_evals.py -q -p no:cacheprovider
+  10 项通过，其中 5 项真实 PostgreSQL
+python scripts/run_evals.py --split dev --out evals/runs/20261008-offline-dev
+  120/120 离线评测完成；三组是假模型接线检查，24/24 约束阻断
+python scripts/run_evals.py --real-model --split dev --ids dev-01 dev-09 dev-16 dev-26 dev-31 dev-40 --out evals/runs/20261008-real-pilot --initial-calls 8 --initial-tokens 9570
+  18/18 真实试跑完成；失败保留
+python scripts/run_evals.py --real-model --split dev --ids dev-01 dev-09 dev-16 dev-26 dev-31 dev-40 --out evals/runs/20261008-real-retest
+  唯一修改后复测 18/18 完成；未挑最好的一次
+python scripts/run_evals.py --real-model --out evals/runs/20261008-real-full
+  240/240 完成，退出码 0；模型正确率另列，不由退出码推导
+python scripts/report_evals.py
+  从原始记录生成 evals/REPORT.md
+python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd
+  当前 PATH 已加入 npm 所在目录，PYTHONUTF8=1
+  PASS=10 FAIL=0 NOT_RUN=2，退出码 0
+  离线 pytest 92 项，真实 PostgreSQL pytest 18 项（共 110 项）通过
+  Ruff、独立参考核对、离线评测、前端构建、Edge 浏览器流程全部通过
+```
+
+默认总验收的两项 NOT_RUN 是未再次启用的真实能力/图冒烟；本阶段真实图冒烟和完整评测有上述独立证据。真实 HTTP/浏览器模型流程仍未执行。
+
+报告生成脚本最终另行通过 Ruff check/format，连续两次生成报告的 SHA256 相同。验收后执行 `scripts/pg.ps1 stop`，服务正常停止/0；下次开发先启动数据库。
+
+### 真实评测结论与限制
+
+| 配置 | 开发集可回答题正确 | 冻结集可回答题正确 |
+|---|---|---|
+| Schema | 4/36（11.1%） | 2/35（5.7%） |
+| 指标语义/示例 | 32/36（88.9%） | 31/35（88.6%） |
+| 再允许一次修复 | 32/36（88.9%） | 30/35（85.7%） |
+
+完整评测修复 0/8 成功；语义与修复配置开发集各错误拒绝 1 题，冻结集正确拒绝 4/5。总体客单价多次误加 day 分组、Top N 被规划错误拒绝、单期间生成两条 SQL及超长日期协议失败均保留，不能宣称全部问题可靠。当前推荐可靠演示范围应围绕已验证的正常聚合、澄清及跨期退款主路径；不发布“准确率 95%”。
+
+本阶段累计 **572 次调用、666,561 Token**，未知 usage 为 0，低于上限；完整评测自身为 489 次调用、571,334 Token。没有核实带日期价格配置，因此不估算人民币费用。2 个工作线程、有限题量的 p50/p95 只描述本次运行；真实模型别名和温度 0 不保证完全复跑一致。
+
+24 条非法 SQL 全部阻断仅说明固定约束用例通过，真实权限/时区/超时由数据库测试另证。三配置为评测对照，未自动切换产品默认模型配置；默认适配器不包含评测示例，不能把对照数字直接当已部署浏览器质量。没有改业务数据、指标定义或放宽执行器。
+
+### 必须理解的三个知识点
+
+1. 可执行不等于正确。计划、日期、分组、金额、NULL、排序均要比较；“已尝试执行的 SQL 100% 成功”会掩盖大量被验证拒绝的请求，所以同时报告所有可回答题分母。
+2. 修复并非必然提升。规划错误拒绝和协议失败不会进入 SQL 修复，重复修复同一错误 SQL 只增加调用；要保留本次 repair 冻结结果下降的证据。
+3. 冻结集约束的是迭代过程。先固定数据/配置再运行；结果已公开后进一步调整即有暴露，不能改个文件名继续称为盲测。
+
+### 可亲手观察的小练习
+
+打开完整 `summary.json`，对比 `repair/frozen` 的 `sql_success_when_attempted`（30/30）和 `result_correct`（30/35），再在 `results.jsonl` 找 `frozen-25` 的 repair 记录。观察 validate → repair → validate → fail，没有 execute；解释为什么只报 30/30 会误导。运行 `python scripts/report_evals.py`，应从相同原始记录生成相同统计，不产生模型费用。
+
+### 交给阶段 6
+
+复用真实评测、原始失败、数据/题库摘要、查询/浏览器流程和运行限制；整理 Compose、演示、架构、简历和面试材料。Docker 仍未验证，真实模型浏览器链路未执行，公网未部署。阶段 6 不自动扩大支持范围；要修剩余模型失败时，先声明冻结集已暴露或设计新冻结家族。本次推送回执在远端确认后追加。

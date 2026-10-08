@@ -5,7 +5,7 @@
 > ⚠️ **本项目使用自行生成、固定随机种子的合成电商数据**，用于演示与评测。
 > 界面上会明确标注「合成演示数据」，不代表任何真实业务。
 
-## 当前状态：阶段 4（浏览器工作台与持久化）已实现，真实模型查询链路待验证
+## 当前状态：阶段 5（评测与有证据的改进）已完成，阶段 6 尚未开始
 
 已完成：
 
@@ -29,8 +29,10 @@
 - 五指标、日/渠道/类别分组、Top N、总体/渠道/类别的两个期间比较；图表配置和变化率由同一查询结果生成
 - `app_state` 下的 PostgreSQL checkpoint、sessions/runs/events；HTTP 接口用服务端随机 Cookie 取得 owner，检查读取、澄清、重试和历史归属；原子拒绝重复或过期澄清
 - 单进程两项查询并发、短轮询；真实浏览器验证刷新读取、两个会话隔离、后端进程重启后的完成结果/澄清恢复和运行中断
+- 40 道开发题、40 道冻结题、24 条固定非法 SQL；独立原始记录评分、持久化调用预算、三配置真实模型对照与完整失败记录
+- 2026-10-08 真实查询图冒烟 4/4；完整 240 次评测已运行，结果及至少五个失败案例见 [评测报告](evals/REPORT.md)
 
-**后续阶段**：模型质量评测和容器交付尚未实现。真实模型查询图与浏览器链路仍待显式验证；离线模型及协议 stub 不代表模型质量。2026-10-08 已同步远端并复验阶段 2–4，默认统一验收全部通过；本次没有启用真实模型。最新实测与限制见 `docs/progress.md`。
+**后续阶段**：容器交付尚未实现。真实模型查询图与评测已显式运行；浏览器验收仍使用离线模型，未验证真实模型 HTTP/浏览器链路。总体客单价、部分 Top N 和超长区间拒绝存在真实失败，不能宣称支持范围内全部可靠；默认验收通过也不表示模型全部答对。最新实测与限制见 `docs/progress.md`。
 
 执行器当前支持指定分析视图上的单条 `SELECT`、聚合、普通 CTE 和 `FROM` 子查询。明确拒绝 `JOIN`、`UNION`、递归 CTE、`SELECT *`、未批准函数及视图以外的数据源。模型生成的 SQL 以后只能经此模块执行；它不是通用 SQL 沙箱，也不判断指标口径是否正确。
 
@@ -70,6 +72,27 @@ CLI 默认是 `offline-query-v1` 离线假模型，支持有限中文演示句�
 ```
 
 查询记录含节点耗时、模型调用数、可用 Token 和错误类别；未返回 usage 时 Token 为 null。网络自动重试关闭，SQL 修复最多一次，模型调用最多五次，澄清最多两轮，节点活动时间预算 90 秒（等待澄清不计入；在节点边界检查）。费用尚未估算。
+
+## 评测
+
+2026-10-08，`deepseek-chat`、温度 0，40 道开发题和 40 道冻结题各比较三配置；冻结题中的 35 道可回答题结果如下：
+
+| 对照配置 | 结果正确 |
+|---|---|
+| Schema 基线 | 2/35（5.7%） |
+| 指标语义与示例 | 31/35（88.6%） |
+| 再允许一次修复 | 30/35（85.7%） |
+
+本轮修复没有提升；这些是严格 SQL 形状约束下的对照结果，不直接代表产品默认配置准确率。阶段累计 572 次调用、666,561 Token，低于已授权的 800 次/200 万 Token；未核实价格，不报人民币费用。24/24 固定非法 SQL 阻断不能外推为现实攻击阻断率。
+
+```powershell
+# 默认离线模型，实际 SQL 查询 PostgreSQL；输出目录必须全新
+.\.venv\Scripts\python.exe scripts/run_evals.py --split dev --out evals/runs/my-offline
+# 真实模型必须显式启用，预算账本重跑时继续累计
+.\.venv\Scripts\python.exe scripts/run_evals.py --real-model --out evals/runs/my-real
+```
+
+评分、冻结规则、预算和复现版本见 [评测说明](evals/README.md)，完整结果、失败分析和原始文件见 [报告](evals/REPORT.md)。冻结结果现在已发布，未来用来迭代必须标记，不能继续称为盲测。
 
 ## 浏览器工作台
 
@@ -178,8 +201,8 @@ Pop-Location
 ## 代码规范基线
 
 ```powershell
-.\.venv\Scripts\python.exe -m ruff check backend scripts data tests
-.\.venv\Scripts\python.exe -m ruff format --check backend scripts data tests
+.\.venv\Scripts\python.exe -m ruff check backend scripts data tests evals
+.\.venv\Scripts\python.exe -m ruff format --check backend scripts data tests evals
 ```
 
 `E501` 是刻意关闭的（中文注释容易超长），行长由 `ruff format` 兜底，
