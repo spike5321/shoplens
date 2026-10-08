@@ -916,3 +916,51 @@ git diff --check
 可复用 QueryService、受限 SQL 执行器、五指标定义、精确报告和节点事件，以及 HTTP/浏览器的完整产品流程。下一阶段按计划建立开发题、模板族隔离的冻结题和约束/边界用例；参考 SQL/答案留在评测侧，不进入模型上下文。先离线跑评测链路，真实评测等本机 Key 与调用预算配置后执行。仍需记录错误拒绝、澄清质量、执行成功与结果正确的区别，不能从这次功能验收推导模型准确率。
 
 提交与推送：暂存的 25 个文件已通过已配置凭据的精确值扫描及本地数据/构建产物检查，`git diff --cached --check` 通过。阶段 4 实现与验收文档提交为 `86c30bd`（`feat: add persistent browser query workspace`）；`git push origin main` 返回成功，远端从 `33d05ee` 更新到 `86c30bd`。本段回执随后单独提交。
+
+---
+
+## 同步与阶段 2–4 复验（2026-10-08）
+
+### 同步范围与实际进度
+
+本次开始时本地 `main` 为 `dbb583b`，只包含阶段 1 的复验与学习记录；此前的 `origin/main` 缓存仍指向 `4a4f9ce`。首次 `git push origin main` 被远端拒绝（fetch first）。执行 `git fetch origin` 后确认，GitHub 已有阶段 2 执行器、阶段 3 查询图及阶段 4 工作台，远端为 `de5680b`。
+
+执行 `git merge origin/main --no-edit`，合并提交为 `a2d2940`，没有冲突。保留 `dbb583b` 的阶段 1 手算说明和 2026-10-08 记录，并同步远端实现。本次没有重做阶段 2，也没有开始阶段 5；用户已明确选择先完成同步与复验。
+
+### 环境恢复与实际命令
+
+- 受限进程连接本机 PostgreSQL 报 Windows 10013。`scripts/pg.ps1 start` 一度报告成功，但进程随执行环境回收，随后本机探测超时。最终在允许本机权限的持续执行会话中运行 `postgres.exe`，真实连接、迁移及测试通过。没有用模拟数据库替代。
+- 旧的 WorkBuddy npm 路径已失效。使用现有 pnpm 将固定版本 `npm@10.9.7` 安装到忽略目录 `.local/tooling`，下载缓存也留在 `.local`。前端用现有 `package-lock.json` 执行 `npm ci`，未修改依赖版本或锁文件。
+- 本机模型 Key 配置探测为真（只检查布尔值，不输出 Key）。这修正了 README 当前状态中沿用的“没有 Key”；历史阶段的缺 Key 记录保留。配置存在不代表服务商或查询链路已验证。
+
+```powershell
+# 持续会话运行真实 PostgreSQL，避免短命后台进程被回收
+& '.local\pgsql\bin\postgres.exe' -D 'D:\Project_02\.local\pgdata' -p 55432
+
+.\.venv\Scripts\python.exe scripts/setup_db.py
+# Database roles, migration, and grants ready.
+.\.venv\Scripts\python.exe scripts/setup_checkpoints.py
+# Checkpoint tables ready in app_state.
+
+& 'C:\Users\spike\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd' --dir 'D:\Project_02\.local\tooling' add --save-exact npm@10.9.7 --ignore-scripts --store-dir 'D:\Project_02\.local\pnpm-store'
+$env:PATH = 'D:\Project_02\.local\tooling\node_modules\.bin;' + $env:PATH
+# 在 frontend 目录执行：
+& 'D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd' ci --cache 'D:\Project_02\.local\npm-cache' --no-audit --no-fund
+
+# 回到仓库根目录；本机权限运行完整验收
+$env:PYTHONUTF8 = '1'
+.\.venv\Scripts\python.exe scripts/verify.py --npm 'D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd'
+```
+
+### 本次结果与未执行项
+
+统一验收退出码 **0**，汇总 **PASS=9 FAIL=0 NOT_RUN=2**：
+
+- Ruff lint 与 format、87 项离线 pytest、离线图样例、协议 stub：通过。
+- 13 项真实 PostgreSQL pytest、独立参考计算核对：通过；包含阶段 2 的权限、实际超时、截断与时区，以及阶段 3/4 的 checkpoint、会话归属和原子澄清检查。
+- 前端构建与真实 Edge 浏览器完整流程：通过；包括查询、图表、刷新、两个会话隔离、澄清以及实际终止/重启后端。
+- 真实能力冒烟与真实查询图冒烟：**未执行**，因为本次未指定 `--real-model`。不能用本次离线和浏览器结果宣称真实模型质量通过。
+
+没有更改业务实现、种子数据或指标口径；恢复操作使用已有初始化/迁移和测试命令。依赖、数据库文件、缓存、构建产物和截图均保持在忽略目录。Docker/容器交付、真实模型查询链路及阶段 5 开发/冻结评测仍未执行。
+
+下一步单独开启阶段 5，先显式验证真实模型查询链路，再按计划建立开发集、冻结集与执行约束用例。同步推送结果在远端确认后追加。
