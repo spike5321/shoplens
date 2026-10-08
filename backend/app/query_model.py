@@ -15,6 +15,11 @@ from app.query_executor import VIEW_COLUMNS
 from app.query_plan import METRICS, QueryPlan, SqlDraft, canonical_queries
 
 
+def public_schema() -> dict[str, list[str]]:
+    """Expose the same qualified view names that the executor actually permits."""
+    return {f"analytics.{name}": sorted(columns) for name, columns in VIEW_COLUMNS.items()}
+
+
 class ModelError(Exception):
     def __init__(self, code: str):
         self.code = code
@@ -241,7 +246,7 @@ class DeepSeekQueryModel:
             {
                 "plan": plan.model_dump(mode="json"),
                 "metric": METRICS[plan.metric_id],
-                "schema": {k: sorted(v) for k, v in VIEW_COLUMNS.items()},
+                "schema": public_schema(),
                 "repair": repair,
                 "previous_sqls": previous_sqls,
                 "error_code": error,

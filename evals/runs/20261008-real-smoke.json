@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-08",
+  "command": ".venv/Scripts/python.exe scripts/smoke_query_graph.py --real-model",
+  "source_commit": "6155658",
+  "captured_from_cli_stdout": true,
+  "results": [
+    {
+      "case": "normal",
+      "pass": true,
+      "status": "succeeded",
+      "provider": "deepseek",
+      "model_id": "deepseek-chat",
+      "model_calls": 2,
+      "tokens": {
+        "input_tokens": 2094,
+        "output_tokens": 209,
+        "total_tokens": 2303
+      },
+      "active_ms": 2915,
+      "error_code": null
+    },
+    {
+      "case": "clarify",
+      "pass": true,
+      "status": "succeeded",
+      "provider": "deepseek",
+      "model_id": "deepseek-chat",
+      "model_calls": 3,
+      "tokens": {
+        "input_tokens": 3320,
+        "output_tokens": 337,
+        "total_tokens": 3657
+      },
+      "active_ms": 2823,
+      "error_code": null
+    },
+    {
+      "case": "cross_period_refund",
+      "pass": true,
+      "status": "succeeded",
+      "provider": "deepseek",
+      "model_id": "deepseek-chat",
+      "model_calls": 2,
+      "tokens": {
+        "input_tokens": 2103,
+        "output_tokens": 212,
+        "total_tokens": 2315
+      },
+      "active_ms": 1786,
+      "error_code": null
+    },
+    {
+      "case": "unsupported",
+      "pass": true,
+      "status": "rejected",
+      "provider": "deepseek",
+      "model_id": "deepseek-chat",
+      "model_calls": 1,
+      "tokens": {
+        "input_tokens": 1217,
+        "output_tokens": 78,
+        "total_tokens": 1295
+      },
+      "active_ms": 1022,
+      "error_code": null
+    }
+  ]
+}

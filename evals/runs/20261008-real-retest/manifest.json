@@ -1,0 +1,57 @@
+{
+  "started_at": "2026-10-08T11:45:51.803553+00:00",
+  "provider": "deepseek",
+  "model_id": "deepseek-chat",
+  "temperature": 0,
+  "max_output_tokens": 2048,
+  "api_retries": 0,
+  "workers": 2,
+  "seed": 20260924,
+  "data_sha256": "147338c9c0a986c6c9f65375aeb260393eb08bda6c20ca2d405d005c32544f6f",
+  "cases_sha256": "f812eed17bab00e958a76bcb3998c30c23d95b9e1f3e67a784ea66a5cfdb65a8",
+  "case_ids": [
+    "dev-01",
+    "dev-09",
+    "dev-16",
+    "dev-26",
+    "dev-31",
+    "dev-40"
+  ],
+  "prompt_version": "stage5-v2-qualified-schema",
+  "source_sha256": {
+    "evals/cases.py": "99b4e7a6f27eb5c7a729b3ffa0fc759ea7ae152df5a7af2d897b9bd56393a423",
+    "evals/models.py": "4863958dbd293b7a4fc868cc4d9d19424fbc30e07d63c1946080e2c617fe81b3",
+    "evals/reference.py": "a55f0b7e30e09c382cdf3cd4baa84118c62a731ebc82ef148fb15483a59b8d48",
+    "evals/runner.py": "a7e398cf008a22d5ee78b76c770d47c417067c6fc1732e10e5413aebbbd8b55d",
+    "backend/app/query_model.py": "ee2e819bd5e5ffe82a533452dcce90bf07752f1613efbf906a6b2979a953d54e",
+    "backend/app/query_graph.py": "5711d3325e13bc4f56f438606432367023c66ac9fd60f0c72a5b114c16af8218",
+    "backend/app/query_plan.py": "052f56b982ff06d18aa0471c182becf0903f61fc36bb7f89f1d73641405c39d9"
+  },
+  "source_commit": "56210b85bb85e419581685665491acbbfce1d01b",
+  "dependencies": {
+    "langchain-deepseek": "1.1.1",
+    "langgraph": "1.2.12",
+    "sqlglot": "30.19.0",
+    "psycopg": "3.3.6"
+  },
+  "statement_timeout_ms": 3000,
+  "row_cap": 200,
+  "reference_date": "2026-09-30",
+  "profiles": {
+    "schema": 0,
+    "semantic": 0,
+    "repair": 1
+  },
+  "frozen_used_for_iteration": false,
+  "frozen_note": "No frozen case used for tuning before this run. Future tuning after inspecting these results must mark it exposed.",
+  "offline_note": "All profiles use the same deterministic fake model offline; this tests scoring/wiring, not prompt quality.",
+  "price_config": null,
+  "budget_before": {
+    "max_calls": 800,
+    "max_tokens": 2000000,
+    "calls": 46,
+    "known_tokens": 52981,
+    "unknown_tokens_reserved": 0,
+    "inflight_reserved": 0
+  }
+}

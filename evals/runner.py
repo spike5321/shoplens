@@ -183,6 +183,11 @@ def main():
     parser.add_argument("--budget-state", default=".local/eval-budget-20261008.json")
     parser.add_argument("--initial-calls", type=int, default=0)
     parser.add_argument("--initial-tokens", type=int, default=0)
+    parser.add_argument(
+        "--frozen-used-for-iteration",
+        action="store_true",
+        help="declare that frozen questions/results have been used to tune this version",
+    )
     args = parser.parse_args()
     output = (ROOT / args.out).resolve()
     if (
@@ -215,6 +220,31 @@ def main():
     ]
     if not selected or (args.ids and set(args.ids) != {r["id"] for r in selected}):
         parser.error("unknown or empty case selection")
+    frozen = any(r["split"] == "frozen" for r in selected)
+    freeze = (
+        json.loads((ROOT / "evals/freeze.json").read_text(encoding="utf-8")) if frozen else None
+    )
+    previous_frozen = frozen and any(
+        json.loads(path.read_text(encoding="utf-8")).get("provider") == "deepseek"
+        and any(
+            case_id.startswith("frozen-")
+            for case_id in json.loads(path.read_text(encoding="utf-8")).get("case_ids", [])
+        )
+        for path in (ROOT / "evals/runs").glob("*/manifest.json")
+    )
+    snapshot_matches = freeze is None or (
+        freeze["cases_sha256"] == digest(cases())
+        and freeze["prompt_version"] == PROMPT_VERSION
+        and all(
+            hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == value
+            for path, value in freeze["source_sha256"].items()
+        )
+    )
+    frozen_iterated = args.frozen_used_for_iteration or (frozen and not snapshot_matches)
+    if frozen and not snapshot_matches and not args.frozen_used_for_iteration:
+        parser.error(
+            "frozen snapshot changed; explicitly mark --frozen-used-for-iteration (not a blind test)"
+        )
     budget = (
         Budget(budget_path, initial_calls=args.initial_calls, initial_tokens=args.initial_tokens)
         if args.real_model
@@ -254,8 +284,10 @@ def main():
         "row_cap": settings.sql_max_rows,
         "reference_date": settings.demo_reference_date,
         "profiles": PROFILES,
-        "frozen_used_for_iteration": False,
-        "frozen_note": "No frozen case used for tuning before this run. Future tuning after inspecting these results must mark it exposed.",
+        "frozen_used_for_iteration": frozen_iterated,
+        "frozen_exposed_before_run": bool(previous_frozen),
+        "frozen_snapshot_matches": snapshot_matches,
+        "frozen_note": "Template families held out during development tuning. Published results are exposed; subsequent tuning must declare iteration, never claim blind results.",
         "offline_note": "All profiles use the same deterministic fake model offline; this tests scoring/wiring, not prompt quality.",
         "price_config": None,
         "budget_before": dict(budget.data) if budget else None,

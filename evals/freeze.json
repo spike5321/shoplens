@@ -1,0 +1,20 @@
+{
+  "created_at": "2026-10-08T11:49:08.015623+00:00",
+  "cases_sha256": "f812eed17bab00e958a76bcb3998c30c23d95b9e1f3e67a784ea66a5cfdb65a8",
+  "prompt_version": "stage5-v2-qualified-schema",
+  "model_id": "deepseek-chat",
+  "temperature": 0,
+  "max_output_tokens": 2048,
+  "max_api_calls": 800,
+  "max_total_tokens": 2000000,
+  "source_sha256": {
+    "evals/cases.py": "99b4e7a6f27eb5c7a729b3ffa0fc759ea7ae152df5a7af2d897b9bd56393a423",
+    "evals/models.py": "4863958dbd293b7a4fc868cc4d9d19424fbc30e07d63c1946080e2c617fe81b3",
+    "backend/app/query_model.py": "ee2e819bd5e5ffe82a533452dcce90bf07752f1613efbf906a6b2979a953d54e",
+    "backend/app/query_graph.py": "5711d3325e13bc4f56f438606432367023c66ac9fd60f0c72a5b114c16af8218",
+    "backend/app/query_plan.py": "052f56b982ff06d18aa0471c182becf0903f61fc36bb7f89f1d73641405c39d9",
+    "backend/app/query_executor.py": "617e8b027c481c43b9b3726e58bc192c472b125aff4991a313a6704baa38c4c6",
+    "data/metrics.yaml": "206e29a3f6435aa2800cfefa0908a9172aa7c496b02e29896b11f2f1ff24e59d"
+  },
+  "policy": "One qualified-schema change based on dev pilot. Frozen families not used for tuning. After publication results are exposed; future iterations must be marked."
+}

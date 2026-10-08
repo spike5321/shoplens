@@ -10,12 +10,11 @@ from pathlib import Path
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from app.query_executor import VIEW_COLUMNS
-from app.query_model import DeepSeekQueryModel, ModelError, ModelReply
+from app.query_model import DeepSeekQueryModel, ModelError, ModelReply, public_schema
 from app.query_plan import METRICS, QueryPlan, SqlDraft
 
 PROFILES = {"schema": 0, "semantic": 0, "repair": 1}
-PROMPT_VERSION = "stage5-v1"
+PROMPT_VERSION = "stage5-v2-qualified-schema"
 
 # Hand-written protocol examples, with no SQL, numerical results or eval answers.
 EXAMPLES = [
@@ -176,7 +175,7 @@ class EvalModel(DeepSeekQueryModel):
                 "clarifications": clarifications,
                 "reference_date": reference,
                 "metric_ids": {k: v["label"] for k, v in METRICS.items()},
-                "schema": {k: sorted(v) for k, v in VIEW_COLUMNS.items()},
+                "schema": public_schema(),
             },
             **kwargs,
         )
@@ -196,7 +195,7 @@ class EvalModel(DeepSeekQueryModel):
             "GROUP BY 维度别名。ORDER BY 维度 ASC NULLS LAST；Top N 先 value DESC NULLS LAST，再维度 ASC NULLS LAST，LIMIT N。无 Top N 不加 LIMIT。",
             {
                 "plan": plan.model_dump(mode="json"),
-                "schema": {k: sorted(v) for k, v in VIEW_COLUMNS.items()},
+                "schema": public_schema(),
             },
             **kwargs,
         )
