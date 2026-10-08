@@ -987,6 +987,7 @@ $env:PYTHONUTF8 = '1'
 - `.local/eval-budget-20261008.json`：共享持久化预算，包含冒烟。调用前预留、usage 结算；缺 usage 或进程中断保守计入预留，重跑不会重置。账本被忽略提交，预算前后状态保留在 manifest/summary。
 - `evals/runner.py`、`scripts/run_evals.py`：先只读逐行核对真实四表和固定数据快照，再经 reader 执行。全量 JSONL 记录成功、失败、候选 SQL、事件、耗时和每次 API usage；结构化协议失败的已返回 usage 也保留。数据库凭据不进入模型或产物。
 - `evals/freeze.json`：固定题库、提示词与执行/业务校验摘要，改变后运行需明确声明已用于迭代；记录之前是否已有真实冻结结果。完整评测开始前没有执行冻结题，发布后不能再当作未暴露的盲测。
+- 发布核对发现本机 Git `core.autocrlf=true`，同一源码换行转换会误报版本变化；补充 LF/CRLF 归一摘要和一个回归用例，保留原字节摘要及所有原始 manifest，不改模型、题库或已记录结果。模型/业务配置仍为 `86d129b`，复现入口用当前 runner/freeze。
 - `scripts/report_evals.py`、`evals/REPORT.md`、`evals/README.md`：从全部 240 个结果重建报告，包含分母、SQL 成功、澄清/拒绝、错误拒绝、修复、延迟、Token、失败分类、六个开发失败的修改/复测和其他根因证据。
 - `tests/test_stage5_evals.py`：题库隔离、手工样例、错误金额/NULL/顺序/截断拒绝、错误计划、预算重跑，以及五指标多维分组的真实 PostgreSQL 对照。统一验收新增无模型调用的 PostgreSQL 离线评测，静态检查包含 evals。
 
@@ -1019,13 +1020,13 @@ python scripts/report_evals.py
 python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd
   当前 PATH 已加入 npm 所在目录，PYTHONUTF8=1
   PASS=10 FAIL=0 NOT_RUN=2，退出码 0
-  离线 pytest 92 项，真实 PostgreSQL pytest 18 项（共 110 项）通过
+  首轮离线 pytest 92 项，真实 PostgreSQL pytest 18 项（共 110 项）通过
   Ruff、独立参考核对、离线评测、前端构建、Edge 浏览器流程全部通过
 ```
 
 默认总验收的两项 NOT_RUN 是未再次启用的真实能力/图冒烟；本阶段真实图冒烟和完整评测有上述独立证据。真实 HTTP/浏览器模型流程仍未执行。
 
-报告生成脚本最终另行通过 Ruff check/format，连续两次生成报告的 SHA256 相同。验收后执行 `scripts/pg.ps1 stop`，服务正常停止/0；下次开发先启动数据库。
+报告生成脚本最终另行通过 Ruff check/format，连续两次生成报告的 SHA256 相同。换行回归修正后的最终统一验收仍为 **PASS=10 FAIL=0 NOT_RUN=2** /0，离线 pytest **93** 项、PostgreSQL pytest **18** 项，共 **111** 项通过。再次执行 `scripts/pg.ps1 stop`，服务正常停止/0；下次开发先启动数据库。
 
 ### 真实评测结论与限制
 
@@ -1053,4 +1054,8 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 
 ### 交给阶段 6
 
-复用真实评测、原始失败、数据/题库摘要、查询/浏览器流程和运行限制；整理 Compose、演示、架构、简历和面试材料。Docker 仍未验证，真实模型浏览器链路未执行，公网未部署。阶段 6 不自动扩大支持范围；要修剩余模型失败时，先声明冻结集已暴露或设计新冻结家族。本次推送回执在远端确认后追加。
+复用真实评测、原始失败、数据/题库摘要、查询/浏览器流程和运行限制；整理 Compose、演示、架构、简历和面试材料。Docker 仍未验证，真实模型浏览器链路未执行，公网未部署。阶段 6 不自动扩大支持范围；要修剩余模型失败时，先声明冻结集已暴露或设计新冻结家族。
+
+### 提交与推送回执
+
+全阶段待推送的 33 个文件已通过已配置凭据的精确值/URL 编码扫描及本地数据、构建产物检查；`git diff --cached --check` 通过。阶段 5 主体提交为 `fc19fa5`（`feat: complete stage 5 model evaluation and evidence report`），包含 `56210b8` 的初次试跑和 `86d129b` 的唯一业务元数据修正/冻结配置。`git push origin main` 成功，远端从 `6155658` 更新为 `fc19fa5`；`git ls-remote` 确认完整提交号 `fc19fa570e884dffe4499b34eddcb202712541e3` 与本地一致。换行复现修正、最终 111 项验收及本段回执随后单独提交；原始模型评测文件未改写。

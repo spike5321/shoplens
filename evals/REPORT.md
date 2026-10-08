@@ -188,4 +188,4 @@
 
 - [初次开发试跑](runs/20261008-real-pilot/results.jsonl)、[修改后复测](runs/20261008-real-retest/results.jsonl)、[完整评测](runs/20261008-real-full/results.jsonl)：成功和失败均保留。
 - [完整汇总](runs/20261008-real-full/summary.json)、[图冒烟](runs/20261008-real-smoke.json)、[冻结配置](freeze.json)。
-- 命令/评分/预算规则见 [评测说明](README.md)。报告可用 `python scripts/report_evals.py` 从上述原始结果重新生成；初次版本为 `56210b8`，完整版本为 `86d129b`。
+- 命令/评分/预算规则见 [评测说明](README.md)。报告可用 `python scripts/report_evals.py` 从上述原始结果重新生成；初次版本为 `56210b8`，完整模型/业务配置为 `86d129b`。重放使用当前 runner/freeze（包含 LF/CRLF 摘要归一），原始记录与模型输入未改写。

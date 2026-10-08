@@ -16,5 +16,15 @@
     "backend/app/query_executor.py": "617e8b027c481c43b9b3726e58bc192c472b125aff4991a313a6704baa38c4c6",
     "data/metrics.yaml": "206e29a3f6435aa2800cfefa0908a9172aa7c496b02e29896b11f2f1ff24e59d"
   },
-  "policy": "One qualified-schema change based on dev pilot. Frozen families not used for tuning. After publication results are exposed; future iterations must be marked."
+  "policy": "One qualified-schema change based on dev pilot. Frozen families not used for tuning. After publication results are exposed; future iterations must be marked.",
+  "normalized_source_sha256": {
+    "evals/cases.py": "99b4e7a6f27eb5c7a729b3ffa0fc759ea7ae152df5a7af2d897b9bd56393a423",
+    "evals/models.py": "4863958dbd293b7a4fc868cc4d9d19424fbc30e07d63c1946080e2c617fe81b3",
+    "backend/app/query_model.py": "2038364d6e90d5842fab45e03d94382cb6355117cf2afacc14260a9f32f49db0",
+    "backend/app/query_graph.py": "cf83e999bdb6fc1aa3e7314f9c2918d14dcf03348fbddc780c47d86cf0c61fc5",
+    "backend/app/query_plan.py": "cd46225727375c4b2ff1d236c478f2b5f006587a87bd05556d8728c82e77a361",
+    "backend/app/query_executor.py": "d1decd48ced309bf5bdd6b02d2ad43b061dc74fa7fc32ed625f828a01322621f",
+    "data/metrics.yaml": "206e29a3f6435aa2800cfefa0908a9172aa7c496b02e29896b11f2f1ff24e59d"
+  },
+  "normalization_note": "Added after full run: LF/CRLF only. Original byte hashes and all experiment manifests remain unchanged."
 }

@@ -10,6 +10,7 @@ from data.dataset import fixture, generate
 from evals.cases import SECURITY_SQL, cases
 from evals.models import Budget
 from evals.reference import expected_tables, score, tables_equal
+from evals.runner import source_digest
 
 
 def test_case_families_are_disjoint_and_fixed():
@@ -90,6 +91,15 @@ def test_budget_persists_failure_reservations_and_never_resets(tmp_path):
     with pytest.raises(ModelError):
         resumed.reserve(1)
     assert resumed.data["known_tokens"] == 10
+
+
+def test_git_newline_conversion_does_not_change_source_identity(tmp_path):
+    lf, crlf = tmp_path / "lf.py", tmp_path / "crlf.py"
+    lf.write_bytes(b"x = 1\ny = 2\n")
+    crlf.write_bytes(b"x = 1\r\ny = 2\r\n")
+    assert source_digest(lf) == source_digest(crlf)
+    crlf.write_bytes(b"x = 1\r\ny = 3\r\n")
+    assert source_digest(lf) != source_digest(crlf)
 
 
 @pytest.mark.integration

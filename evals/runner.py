@@ -39,6 +39,11 @@ def digest(value):
     ).hexdigest()
 
 
+def source_digest(path):
+    """Git LF/CRLF conversion does not change Python/YAML source semantics."""
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def check_snapshot(settings, data):
     with psycopg.connect(settings.dsn("admin"), connect_timeout=3, row_factory=dict_row) as conn:
         conn.execute("SET TRANSACTION READ ONLY")
@@ -236,8 +241,10 @@ def main():
         freeze["cases_sha256"] == digest(cases())
         and freeze["prompt_version"] == PROMPT_VERSION
         and all(
-            hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == value
-            for path, value in freeze["source_sha256"].items()
+            source_digest(ROOT / path) == value
+            for path, value in freeze.get(
+                "normalized_source_sha256", freeze["source_sha256"]
+            ).items()
         )
     )
     frozen_iterated = args.frozen_used_for_iteration or (frozen and not snapshot_matches)
