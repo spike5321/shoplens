@@ -1114,4 +1114,6 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 
 ### 提交与推送
 
-本阶段验收已通过；提交与远端确认回执将在实际推送成功后追加，不提前声明已推送。
+阶段 6 主体提交 **a1247d5433865593fe32cb18e195e2bcf11139c3**（`feat: complete stage 6 local delivery and interview materials`）已推送到 ShopLens 的 `origin/main`。`git push origin main` 成功（c461fd1 → a1247d5），`git ls-remote origin refs/heads/main` 与本地完整提交号一致。34 个待提交文件通过已配置凭据精确值/URL编码扫描、私有JSON字段和本地数据/构建产物检查，`git diff --cached --check` 通过。本段实际回执随后单独提交并推送。
+
+交接时临时真实模型 API、Vite 与本机 PostgreSQL 已停止；保留 `shoplens-stage6` 的 db/api/web 健康运行，init退出0，打开 http://127.0.0.1:5173 为离线模型/真实容器数据库演示。管理该现有环境需使用 `docker compose -p shoplens-stage6 --env-file .local/compose.env ...`，不要同时启动另一套服务占用5173。
