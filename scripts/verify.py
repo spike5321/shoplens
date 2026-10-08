@@ -13,6 +13,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON = sys.executable
@@ -101,10 +102,24 @@ def main() -> int:
     args = parser.parse_args()
 
     results = [
-        run("Ruff lint", [PYTHON, "-m", "ruff", "check", "backend", "scripts", "data", "tests"]),
+        run(
+            "Ruff lint",
+            [PYTHON, "-m", "ruff", "check", "backend", "scripts", "data", "tests", "evals"],
+        ),
         run(
             "Ruff format",
-            [PYTHON, "-m", "ruff", "format", "--check", "backend", "scripts", "data", "tests"],
+            [
+                PYTHON,
+                "-m",
+                "ruff",
+                "format",
+                "--check",
+                "backend",
+                "scripts",
+                "data",
+                "tests",
+                "evals",
+            ],
         ),
         run(
             "Offline pytest",
@@ -125,6 +140,7 @@ def main() -> int:
             [
                 Result("PostgreSQL integration pytest", "NOT_RUN", reason),
                 Result("PostgreSQL reference check", "NOT_RUN", reason),
+                Result("PostgreSQL offline evaluation", "NOT_RUN", reason),
             ]
         )
     else:
@@ -135,6 +151,10 @@ def main() -> int:
                     [PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-m", "integration"],
                 ),
                 run("PostgreSQL reference check", [PYTHON, "scripts/check_reference.py"]),
+                run(
+                    "PostgreSQL offline evaluation",
+                    [PYTHON, "scripts/run_evals.py", "--out", f".local/verify-evals-{uuid4().hex}"],
+                ),
             ]
         )
 
