@@ -963,4 +963,12 @@ $env:PYTHONUTF8 = '1'
 
 没有更改业务实现、种子数据或指标口径；恢复操作使用已有初始化/迁移和测试命令。依赖、数据库文件、缓存、构建产物和截图均保持在忽略目录。Docker/容器交付、真实模型查询链路及阶段 5 开发/冻结评测仍未执行。
 
-下一步单独开启阶段 5，先显式验证真实模型查询链路，再按计划建立开发集、冻结集与执行约束用例。同步推送结果在远端确认后追加。
+验收结束执行 `scripts/pg.ps1 stop`，返回 `server stopped`/0，正常关闭本次临时数据库。下次开发需先启动 PostgreSQL。
+
+下一步单独开启阶段 5，先显式验证真实模型查询链路，再按计划建立开发集、冻结集与执行约束用例。
+
+### 提交与推送回执
+
+待推送差异仅有 `README.md` 和 `docs/progress.md`；已扫描全部已配置凭据的精确值及 URL 编码形式，没有命中，未包含本地数据或构建产物，`git diff --cached --check` 通过。
+
+同步复验文档提交为 `20afb68`（`docs: sync stages 2-4 and record local verification`），包含此前 `a2d2940` 的合并及 `dbb583b` 的本地记录。`git push origin main` 成功，远端从 `de5680b` 更新到 `20afb68`；`git ls-remote --heads origin main` 确认远端完整提交号为 `20afb68ff0e14ff60e9641162d2f8a98b6ed6bd9`，与本地一致。本段回执随后单独提交。
