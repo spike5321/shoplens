@@ -1117,3 +1117,40 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 阶段 6 主体提交 **a1247d5433865593fe32cb18e195e2bcf11139c3**（`feat: complete stage 6 local delivery and interview materials`）已推送到 ShopLens 的 `origin/main`。`git push origin main` 成功（c461fd1 → a1247d5），`git ls-remote origin refs/heads/main` 与本地完整提交号一致。34 个待提交文件通过已配置凭据精确值/URL编码扫描、私有JSON字段和本地数据/构建产物检查，`git diff --cached --check` 通过。本段实际回执随后单独提交并推送。
 
 交接时临时真实模型 API、Vite 与本机 PostgreSQL 已停止；保留 `shoplens-stage6` 的 db/api/web 健康运行，init退出0，打开 http://127.0.0.1:5173 为离线模型/真实容器数据库演示。管理该现有环境需使用 `docker compose -p shoplens-stage6 --env-file .local/compose.env ...`，不要同时启动另一套服务占用5173。
+
+---
+
+## 指导式走读与产品配置基准准备（2026-10-26，进行中）
+
+用户选择逐步亲自操作，由助手负责环境准备并指导观察。当前仅准备第一次页面练习，尚未完成产品配置基准评测，也未开始修改查询功能。
+
+### 本次实际检查与结果
+
+- `git status --short`：检查开始时工作区干净。
+- `docker compose -p shoplens-stage6 --env-file .local/compose.env ps`：首次因 Docker Engine 管道不存在失败。
+- `docker desktop start --timeout 45`：普通沙箱报安装注册表项不存在；同一命令在获准的本机执行环境返回成功。未重装 Docker 或修改注册表。
+- `docker compose -p shoplens-stage6 --env-file .local/compose.env ps -a`：普通沙箱访问管道权限不足；本机执行确认原有 db/api/web 均 healthy，init 保持 Exited (0)。未删除卷、重灌数据或重建镜像。
+- 本机 `.venv` Python 的 HTTP 探测在沙箱遇到 WinError 10013，且输出基础解释器定位警告；没有将这次失败计为通过，后续宿主 Python 评测前仍需确认运行环境。
+- 获准本机执行 `Invoke-WebRequest http://127.0.0.1:5173` 与 `Invoke-RestMethod http://127.0.0.1:5173/api/session`：页面 HTTP 200、provider=offline、synthetic=true、参考日 2026-09-30、数据区间 [2026-07-01,2026-10-25)。仅输出非敏感字段，未记录 Cookie/CSRF。
+- 只读预算账本：累计 580/800 次调用、676213/2000000 Token，未知/在途预留均为 0。本次未调用真实模型。
+
+### 待完成与限制
+
+- 用户页面练习待反馈：先提交“2026年9月各渠道实付金额是多少？”，观察指标、期间、分组、表格与图表。
+- 当前为离线模型/真实容器 PostgreSQL，仅用于认识流程，不计入真实模型正确率。
+- 产品默认配置评测入口、小批/完整真实模型基准、手工核对教学和后续功能优化均未执行；统一验收未重跑，不宣称新增阶段完成或已推送。
+- 原有容器保持运行，方便用户继续操作；本段为进行中的走读记录。
+
+### 人工练习与独立复核
+
+- 用户提供截图完成渠道实付、销售额歧义澄清、补充期间净收款、退款核对和预测拒绝。仅评估离线模式；澄清保留9月日期，截图金额相互一致。用户正确手算教学样例：实付300元、退款130元、净收款170元。
+- 观察到离线追问在原问题已有“2026年9月”时仍要求补充日期，记录为文案/交互待改进项，本轮不改。
+- 检查容器内 `check_snapshot` 确认实际四表等于固定生成器记录；独立 `calculate` 与用户截图的三渠道实付、总实付、退款及净收款全部相符。组合探测曾把 `check()` 返回的80（用例数量）传给 SystemExit，造成非零退出；属于检查命令使用错误。单独运行 `docker compose -p shoplens-stage6 --env-file .local/compose.env --profile checks run --rm --no-deps checks python scripts/check_reference.py` 后明确退出0：80组 Python/SQL、14手算通过。
+
+### 产品配置入口准备（真实模型尚未运行）
+
+- 在 `codex/production-baseline` 分支新增 production 预算/记录包装及 runner `--profiles` 选择；产品提示词、业务代码、数据、评分和旧三组默认行为不变。
+- 新增5项测试先失败后全部通过；与旧评测6项单元测试合计11项通过。
+- `.\scripts\pg.ps1 start` 本机合成 PostgreSQL 启动成功。临时停止容器 web 释放5173后，运行 `.\.venv\Scripts\python.exe scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd`（设置PYTHONUTF8和npm PATH）：PASS=10、FAIL=0、NOT_RUN=2；98离线+18真实PG=116测试通过。两项未执行是未启用的真实模型冒烟。
+- `scripts/run_evals.py --profiles production --out evals/runs/20261026-production-offline`：80/80记录完成，API调用0，24/24固定非法SQL阻断；dev行为40/40、旧frozen行为32/40。后者8项离线解析器失败保留，不作为真实模型质量。旧冻结源码摘要仍匹配。
+- `docker compose ... start web` 已恢复演示网页，真实模型试跑和完整基准待执行。native worktree因当前写权限限制未用于开发，归档返回primary checkout保护错误；原目录独立分支为实际工作位置。

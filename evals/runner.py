@@ -26,6 +26,7 @@ from data.dataset import SEED, generate
 from data.reference import check_manual_fixture
 from evals.cases import SECURITY_SQL, cases
 from evals.models import PROFILES, PROMPT_VERSION, Budget, EvalModel
+from evals.production import ProductionModel
 from evals.reference import score
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,9 +80,20 @@ def security_check(executor):
     return records
 
 
+def profile_settings(profile, settings):
+    if profile == "production":
+        return settings
+    return settings.model_copy(update={"max_repair_count": PROFILES[profile]})
+
+
 def evaluate(case, profile, settings, executor, data, budget, real):
-    model = EvalModel(settings, profile, budget) if real else OfflineQueryModel()
-    selected = settings.model_copy(update={"max_repair_count": PROFILES[profile]})
+    if not real:
+        model = OfflineQueryModel()
+    elif profile == "production":
+        model = ProductionModel(settings, budget)
+    else:
+        model = EvalModel(settings, profile, budget)
+    selected = profile_settings(profile, settings)
     service = QueryService(executor, selected, InMemorySaver(), model=model)
     started = time.monotonic()
     state = service.start(case["question"], owner_id="evaluation")
@@ -119,7 +131,7 @@ def evaluate(case, profile, settings, executor, data, budget, real):
 
 def summarize(records):
     summaries = {}
-    for profile in PROFILES:
+    for profile in (*PROFILES, "production"):
         for split in ("dev", "frozen"):
             rows = [r for r in records if r["profile"] == profile and r["split"] == split]
             if not rows:
@@ -181,6 +193,13 @@ def summarize(records):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--real-model", action="store_true")
+    parser.add_argument(
+        "--profiles",
+        nargs="+",
+        choices=(*PROFILES, "production"),
+        default=list(PROFILES),
+        help="production uses the unchanged product adapter/settings; default keeps the 3 legacy comparisons",
+    )
     parser.add_argument("--split", choices=("dev", "frozen", "all"), default="all")
     parser.add_argument("--ids", nargs="+")
     parser.add_argument("--out", required=True)
@@ -214,6 +233,10 @@ def main():
     settings = settings.model_copy(
         update={"model_provider": "deepseek" if args.real_model else "offline"}
     )
+    selected_profiles = {
+        name: profile_settings(name, settings).max_repair_count
+        for name in dict.fromkeys(args.profiles)
+    }
     data = generate()
     check_manual_fixture()
     check_snapshot(settings, data)
@@ -277,6 +300,7 @@ def main():
                 "evals/models.py",
                 "evals/reference.py",
                 "evals/runner.py",
+                "evals/production.py",
                 "backend/app/query_model.py",
                 "backend/app/query_graph.py",
                 "backend/app/query_plan.py",
@@ -290,7 +314,9 @@ def main():
         "statement_timeout_ms": settings.sql_statement_timeout_ms,
         "row_cap": settings.sql_max_rows,
         "reference_date": settings.demo_reference_date,
-        "profiles": PROFILES,
+        "profiles": selected_profiles,
+        "production_note": "production calls DeepSeekQueryModel unchanged, without comparison examples; query-kernel evaluation, not a full HTTP/browser or persistence benchmark. Offline mode remains a fake-model wiring check.",
+        "production_usage_note": "The unchanged product adapter discards raw usage on protocol failure; missing usage retains the conservative budget reservation and is reported as unknown.",
         "frozen_used_for_iteration": frozen_iterated,
         "frozen_exposed_before_run": bool(previous_frozen),
         "frozen_snapshot_matches": snapshot_matches,
@@ -321,7 +347,7 @@ def main():
                     evaluate, case, profile, settings, executor, data, budget, args.real_model
                 ): (case, profile)
                 for case in selected
-                for profile in PROFILES
+                for profile in selected_profiles
             }
             for future in as_completed(jobs):
                 result = future.result()
@@ -335,7 +361,7 @@ def main():
                     )
     summary = {
         "completed_at": datetime.now(UTC).isoformat(),
-        "requested": len(selected) * len(PROFILES),
+        "requested": len(selected) * len(selected_profiles),
         "completed": len(records),
         "constraints_passed": sum(r["blocked"] for r in constraints),
         "constraints_total": len(constraints),

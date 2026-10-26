@@ -31,6 +31,22 @@
 
 ## 运行与预算
 
+### 产品实际配置基准（新增）
+
+`--profiles production` 使用 `DeepSeekQueryModel` 原有提示词和模型调用，不添加上表的三条协议示例，修复次数直接取产品 Settings。包装层仅记录预算、调用结果和提示词摘要；成功/失败均保留。默认未指定 `--profiles` 时仍跑原有三组，不会自动增加真实调用。
+
+```powershell
+# 仅检查接线；离线解析器不保证覆盖所有冻结问法
+.\.venv\Scripts\python.exe scripts/run_evals.py --profiles production --out evals/runs/production-offline-new
+# 明确真实模型，使用既有预算账本；输出目录必须全新
+.\.venv\Scripts\python.exe scripts/run_evals.py --real-model --profiles production --split dev --ids dev-01 dev-09 dev-16 dev-26 dev-31 dev-40 --out evals/runs/production-pilot-new
+.\.venv\Scripts\python.exe scripts/run_evals.py --real-model --profiles production --out evals/runs/production-full-new
+```
+
+这是产品查询内核的实际配置基准；当前网页若仍为 offline，则不等于网页已切换真实模型。runner 用内存 checkpoint 隔离评测任务，不衡量 HTTP 会话、持久化恢复或负载能力。生产适配器在协议失败时不返回原始 usage，包装层将其保留为未知消耗并扣住保守预留，不修改产品适配器来改善本轮成绩。
+
+旧 80 题已曝光，只称回归基准。原冻结摘要与历史结果保持不变；后续用这些失败优化时，需要声明迭代并设计新的未参与调试保留题。
+
 先启动 PostgreSQL，按 README 完成迁移/种子和依赖安装。从仓库根目录运行：
 
 ```powershell
