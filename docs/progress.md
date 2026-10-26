@@ -1154,3 +1154,13 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 - `.\scripts\pg.ps1 start` 本机合成 PostgreSQL 启动成功。临时停止容器 web 释放5173后，运行 `.\.venv\Scripts\python.exe scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd`（设置PYTHONUTF8和npm PATH）：PASS=10、FAIL=0、NOT_RUN=2；98离线+18真实PG=116测试通过。两项未执行是未启用的真实模型冒烟。
 - `scripts/run_evals.py --profiles production --out evals/runs/20261026-production-offline`：80/80记录完成，API调用0，24/24固定非法SQL阻断；dev行为40/40、旧frozen行为32/40。后者8项离线解析器失败保留，不作为真实模型质量。旧冻结源码摘要仍匹配。
 - `docker compose ... start web` 已恢复演示网页，真实模型试跑和完整基准待执行。native worktree因当前写权限限制未用于开发，归档返回primary checkout保护错误；原目录独立分支为实际工作位置。
+
+### 真实评测阻塞与当前交接
+
+- 评测入口实现已提交 `28762b9`（feat: add faithful production configuration evaluation profile）。尚未宣称本次基准阶段完成或推送。
+- 尝试运行 `scripts/run_evals.py --real-model --profiles production --split dev --ids dev-01 dev-09 dev-16 dev-26 dev-31 dev-40 --out evals/runs/20261026-production-pilot`，自动审批在进程启动前拒绝：虽然已有真实模型试跑与预算授权，但尚未明确授权向外部目的地发送这些具体评测载荷。
+- 未绕过拒绝。只读确认目的地为 https://api.deepseek.com/v1，Key已配置；真实试跑目录不存在，原预算仍为580次/676213Token，未知/在途均0。本轮真实模型调用为0。
+- 待用户明确授权发送合成问题/澄清、参考日期、指标字典、批准视图字段、产品提示词/输出协议及必要的候选SQL/错误类别。参考答案、原始订单和数据库凭据不进入模型输入；Key仅用于服务请求认证。
+- 准备与离线结果见 `evals/PRODUCTION_BASELINE.md`。完成真实试跑/80题基准后才进入问题修复；当前未修改用户发现的重复日期追问，也未增加连续追问功能。
+- 独立只读代码审阅范围411563d..28762b9：未发现Critical/Important/Minor问题，Task 1入口实现可接受；审阅没有外部调用，也没有读取题库参考答案。真实质量、运行时真实usage与本轮真实浏览器链路不在该审阅结论内；评分由现有真实数据库/原始记录检查支撑，测试结果以主执行者实际命令为准。报告与真实评测交付仍未完成，不据此推导模型质量。
+- `D:\Project_02` 不是app托管worktree，重新附着被工具拒绝；后续所有命令继续显式指定该目录，避免误在临时托管工作区执行。代码和忽略的预算账本都只在原目录更新。

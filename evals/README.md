@@ -33,6 +33,8 @@
 
 ### 产品实际配置基准（新增）
 
+本轮准备、独立核对、离线结果和真实评测状态见 [产品配置基准记录](PRODUCTION_BASELINE.md)。
+
 `--profiles production` 使用 `DeepSeekQueryModel` 原有提示词和模型调用，不添加上表的三条协议示例，修复次数直接取产品 Settings。包装层仅记录预算、调用结果和提示词摘要；成功/失败均保留。默认未指定 `--profiles` 时仍跑原有三组，不会自动增加真实调用。
 
 ```powershell

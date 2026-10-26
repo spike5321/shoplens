@@ -1,0 +1,120 @@
+{
+  "completed_at": "2026-10-26T14:22:17.186288+00:00",
+  "requested": 80,
+  "completed": 80,
+  "constraints_passed": 24,
+  "constraints_total": 24,
+  "metrics": {
+    "production/dev": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 36,
+        "total": 36,
+        "rate": 1.0
+      },
+      "all_behavior_correct": {
+        "passed": 40,
+        "total": 40,
+        "rate": 1.0
+      },
+      "sql_success_answerable": {
+        "passed": 36,
+        "total": 36,
+        "rate": 1.0
+      },
+      "sql_success_when_attempted": {
+        "passed": 36,
+        "total": 36,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "rejection_correct": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "false_rejections": 0,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "p50_ms": 35,
+      "p95_ms": 88,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 80,
+      "api_calls": 0,
+      "known_tokens": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {}
+    },
+    "production/frozen": {
+      "cases": 40,
+      "result_correct": {
+        "passed": 30,
+        "total": 35,
+        "rate": 0.8571428571428571
+      },
+      "all_behavior_correct": {
+        "passed": 32,
+        "total": 40,
+        "rate": 0.8
+      },
+      "sql_success_answerable": {
+        "passed": 35,
+        "total": 35,
+        "rate": 1.0
+      },
+      "sql_success_when_attempted": {
+        "passed": 35,
+        "total": 35,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 5,
+        "total": 5,
+        "rate": 1.0
+      },
+      "rejection_correct": {
+        "passed": 2,
+        "total": 5,
+        "rate": 0.4
+      },
+      "false_rejections": 0,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "p50_ms": 33,
+      "p95_ms": 58,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 85,
+      "api_calls": 0,
+      "known_tokens": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {
+        "wrong_plan": 5,
+        "model_protocol_error": 1,
+        "wrong_behavior": 2
+      }
+    }
+  },
+  "budget_after": null
+}
