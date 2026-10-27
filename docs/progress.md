@@ -1164,3 +1164,27 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 - 准备与离线结果见 `evals/PRODUCTION_BASELINE.md`。完成真实试跑/80题基准后才进入问题修复；当前未修改用户发现的重复日期追问，也未增加连续追问功能。
 - 独立只读代码审阅范围411563d..28762b9：未发现Critical/Important/Minor问题，Task 1入口实现可接受；审阅没有外部调用，也没有读取题库参考答案。真实质量、运行时真实usage与本轮真实浏览器链路不在该审阅结论内；评分由现有真实数据库/原始记录检查支撑，测试结果以主执行者实际命令为准。报告与真实评测交付仍未完成，不据此推导模型质量。
 - `D:\Project_02` 不是app托管worktree，重新附着被工具拒绝；后续所有命令继续显式指定该目录，避免误在临时托管工作区执行。代码和忽略的预算账本都只在原目录更新。
+
+---
+
+## 产品实际配置回归基准（2026-10-26评测 / 2026-10-27复核交接）
+
+用户明确回复“同意按上述范围继续”，授权向 https://api.deepseek.com/v1 发送既定合成评测载荷；之后又要求恢复暂停任务。以下为最新实际状态，替代上节“真实评测待授权”的交接状态。工作位置为 `D:\Project_02`，分支 `codex/production-baseline`。
+
+### 实际命令与结果
+
+- `scripts/run_evals.py --real-model --profiles production --split dev --ids dev-01 dev-09 dev-16 dev-26 dev-31 dev-40 --out evals/runs/20261026-production-pilot`：6/6正确，13次API，15380已知Token，退出0。
+- `scripts/run_evals.py --real-model --profiles production --out evals/runs/20261026-production-full`：80/80完整记录，24/24固定非法SQL阻断，167次API，200934已知Token，1次usage未知并保留22236Token预留，退出0。开发可回答35/36、旧冻结可回答33/35，合计68/71（95.8%）；拒绝8/9、初次澄清9/9、修复1/4。全部行为76/80，四个失败完整保留。
+- 失败为dev-26/frozen-26/frozen-28总体客单价SQL错误增加分组，及frozen-38超长区间返回协议错误而非明确拒绝。试跑中的dev-26成功、完整评测同题失败，两次均保留。没有修改产品提示词、SQL/计划校验、评分或原始数据；不据此声称修复或优化完成。
+- 首次临时Vite选用5174端口，页面POST被既有Origin检查拒绝，浏览器等待导航超时；结果数组为空、模型调用0。改用已经允许的4173端口，没有放宽安全检查。启动4173时自动审批服务报告额度不足，动作未执行；不是风险拒绝，未绕过。用户恢复任务后继续。
+- 2026-10-27 `.\scripts\pg.ps1 start` 成功；`scripts/delivery_api.py --real-model --budget .local/eval-budget-20261008.json` 启动本机18006，Vite在4173代理到18006。临时副本 `frontend/e2e/.local/production-delivery.mjs` 仅将原delivery.mjs的baseURL设为4173、输出目录设为20261027-production-browser。
+- `node e2e/.local/production-delivery.mjs --real-model`：4个真实Edge/HTTP/模型/PostgreSQL场景完成；`scripts/check_delivery.py .local/20261027-production-browser/results.json`：独立原始记录评分和历史刷新/双会话隔离共5/5通过，退出0。8次API、9642Token，未知0。正常/澄清截图已检查，无Key/Cookie；真实澄清没有重复追问日期，离线文案问题不能直接归于真实模型。
+- 停止临时API/Vite后，最终统一验收 `.\.venv\Scripts\python.exe scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd`（PYTHONUTF8=1、npm目录加入PATH）：PASS=10 / FAIL=0 / NOT_RUN=2，退出0，98离线+18真实PG=116测试通过，含参考核对/离线评测/构建/浏览器。两项NOT_RUN为未再次启用的真实能力和真实图冒烟；本轮真实模型完整评测和页面另有上述证据，没有额外花费重跑。
+
+### 预算、产物与限制
+
+- 本轮新增188次API、225956已知Token及22236未知预留；沿用原账本累计768/800次、902169已知Token＋22236未知预留＝924405/2000000预算占用，在途0。没有重置预算或新增额度；费用单价未核实，不估算人民币。
+- 真实试跑/完整评测文件分别在 `evals/runs/20261026-production-pilot` 和 `evals/runs/20261026-production-full`；报告 `evals/PRODUCTION_BASELINE.md`；页面原始JSON、独立评分、端口失败诊断在 `docs/evidence/production-*`，两张经过检查的截图在 `docs/assets/production-*`。旧阶段报告、冻结文件及原始结果未改写。
+- 旧80题已曝光，本轮是回归基准，不是新题盲测；模型别名/时间与对照配置不同，不能把与阶段5数字差异宣称为本轮优化。完整80题为内核/内存checkpoint运行，4个页面场景单独核对；不外推全量HTTP、长期运行、并发或公网能力。
+- 下一步可选dev-26客单价作为个人修复教学案例，但需先制定新保留题；本轮未修该问题、未修离线重复日期文案，也未实现连续追问。
+- 产品代码与入口自28762b9后未改；独立代码审阅无待处理问题。当前剩余工作为报告/原始结果凭据与产物扫描、提交推送和远端确认，不能提前写已推送。

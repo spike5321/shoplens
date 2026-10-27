@@ -9,6 +9,8 @@
 
 [容器启动与验收](docs/delivery.md) · [架构与请求走读](docs/architecture.md) · [三分钟演示](docs/demo.md) · [简历与面试问题](docs/interview.md) · [实测记录](docs/progress.md)
 
+2026-10-27补充：[产品实际配置回归基准](evals/PRODUCTION_BASELINE.md)。沿产品原提示词的80题真实评测完整运行，可回答题68/71正确、应拒绝题8/9正确拒绝；真实浏览器复核5/5。旧题已曝光，属于回归基准；客单价额外分组等4个失败保留，本轮未修改业务逻辑或宣称质量优化完成。
+
 已完成：
 
 - 项目骨架：`backend/` `frontend/` `data/` `evals/` `docs/` `tests/` `scripts/`
