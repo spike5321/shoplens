@@ -1230,4 +1230,9 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 
 ### 交接状态
 
-修复与验收已完成，待凭据/产物检查、提交推送和远端确认。不能在确认前写已推送。用户下一步可走读报告中的SQL，解释COUNT(DISTINCT order_id)、无GROUP BY及NULLIF各自解决的问题。
+修复与验收已完成。用户下一步可走读报告中的SQL，解释COUNT(DISTINCT order_id)、无GROUP BY及NULLIF各自解决的问题。
+
+### 本阶段推送与环境回执
+
+- 22个待提交文件通过配置凭据精确值/URL编码及本地产物扫描，`git diff --cached --check`通过。主体提交 **13999bf8fa42ccc976b4b9e6ade7c2689351ab09**（fix: keep SQL grouping aligned with the confirmed query plan），`git push origin codex/production-baseline`成功，`git ls-remote --heads origin codex/production-baseline`与本地完整哈希一致。未合并main、未创建PR。本段回执随后单独提交推送。
+- `scripts/pg.ps1 stop`成功；`docker desktop start --timeout 45`及原项目`compose up -d --wait --wait-timeout 60`完成，db/api/web均healthy、init退出0。5173接口确认provider=offline、synthetic=true、reference_date=2026-09-30；保留旧镜像/数据卷，未将源码修复宣称为新容器部署。
