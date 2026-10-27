@@ -1289,3 +1289,9 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 
 - 提交前29个文件通过已配置凭据精确值/URL编码扫描、JSON私有字段检查和本地数据/构建产物检查；截图已视觉检查，`git diff --cached --check`通过。
 - 本机测试PostgreSQL已由宿主 `scripts/pg.ps1 stop` 确认正常停止；容器db/api/web继续健康运行，5173保留新镜像供用户体验。
+
+### 本阶段推送回执
+
+- 主体提交 **f08f7a59f6141cf0a384eb3620cd25aa6231f045**（`feat: add persistent follow-up queries bound to successful results`）。
+  `git push origin codex/production-baseline`成功（3c32391 → f08f7a5），`git ls-remote --heads origin codex/production-baseline`返回相同完整哈希，确认已推送到ShopLens远端分支。
+- 本阶段开发、验收、凭据检查和本地新镜像交付已完成；未合并main、未创建PR。本推送回执及计划勾选随后单独提交推送，主体代码不再修改。

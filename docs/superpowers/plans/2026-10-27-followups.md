@@ -28,7 +28,7 @@
 - [x] 3. workspace.py保存来源/基础计划、同会话成功校验、新端点、重试兼容；tests真实PG验证与独立评分。
 - [x] 4. api.ts/App.tsx/styles.css增加来源结果、追问表单、历史标记和回看；浏览器验证刷新、隔离及重启。
 - [x] 5. 完整verify（PYTHONUTF8/npm PATH/--frozen-used-for-iteration），预算内真实模型F01–F03；记录所有结果、限制和预算。
-- [ ] 6. 独立代码审阅、必要修复验证，更新README/progress，扫描凭据及产物，提交推送并核对远端。
+- [x] 6. 独立代码审阅、必要修复验证，更新README/progress，扫描凭据及产物，提交推送并核对远端。
 
 ## Execution ledger
 
@@ -37,3 +37,4 @@
 - Tasks 1–5 complete：30项新增追问测试、158项总pytest、统一验收10/0/2；真实定向6/6、9API，预算799/800。
 - Task 6审阅完成：3类Important已按失败回归修复；额外评分shape检查已复核既有真实记录4/4。凭据扫描与提交推送回执待最后完成。
 - 交付环境：仅重建原项目api/web，新镜像浏览器5/5，历史/视图摘要不变，init及数据卷未动。
+- Task 6 complete：29文件凭据/产物扫描及diff检查通过；主体f08f7a59f6141cf0a384eb3620cd25aa6231f045已推送并由ls-remote确认。本机PG正常停止，原Docker项目新镜像健康运行。
