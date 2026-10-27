@@ -1,0 +1,58 @@
+{
+  "started_at": "2026-10-27T10:20:13.161504+00:00",
+  "provider": "deepseek",
+  "model_id": "deepseek-chat",
+  "temperature": 0,
+  "max_output_tokens": 2048,
+  "api_retries": 0,
+  "workers": 1,
+  "seed": 20260924,
+  "data_sha256": "147338c9c0a986c6c9f65375aeb260393eb08bda6c20ca2d405d005c32544f6f",
+  "cases_sha256": "f812eed17bab00e958a76bcb3998c30c23d95b9e1f3e67a784ea66a5cfdb65a8",
+  "case_ids": [
+    "dev-01",
+    "dev-07",
+    "dev-13",
+    "dev-19"
+  ],
+  "prompt_version": "stage5-v2-qualified-schema",
+  "source_sha256": {
+    "evals/cases.py": "99b4e7a6f27eb5c7a729b3ffa0fc759ea7ae152df5a7af2d897b9bd56393a423",
+    "evals/models.py": "4863958dbd293b7a4fc868cc4d9d19424fbc30e07d63c1946080e2c617fe81b3",
+    "evals/reference.py": "a55f0b7e30e09c382cdf3cd4baa84118c62a731ebc82ef148fb15483a59b8d48",
+    "evals/runner.py": "e113bd0c693f8b17608ec10e393a268591fd7d329c1b48214a9d333a871c309f",
+    "evals/production.py": "e1ab419672addc9a12951641e23170d3ba3858caf4bcaddc482a58a23e4481d6",
+    "backend/app/query_model.py": "1fd2e37bcf32ed5a24aae49084d19c42e6090180a7b9eabad46a160b92bfc904",
+    "backend/app/query_graph.py": "5711d3325e13bc4f56f438606432367023c66ac9fd60f0c72a5b114c16af8218",
+    "backend/app/query_plan.py": "052f56b982ff06d18aa0471c182becf0903f61fc36bb7f89f1d73641405c39d9"
+  },
+  "source_commit": "579e260bfee21a3b24ae7efa237ac76be6453532",
+  "dependencies": {
+    "langchain-deepseek": "1.1.1",
+    "langgraph": "1.2.12",
+    "sqlglot": "30.19.0",
+    "psycopg": "3.3.6"
+  },
+  "statement_timeout_ms": 3000,
+  "row_cap": 200,
+  "reference_date": "2026-09-30",
+  "profiles": {
+    "production": 1
+  },
+  "production_note": "production calls DeepSeekQueryModel unchanged, without comparison examples; query-kernel evaluation, not a full HTTP/browser or persistence benchmark. Offline mode remains a fake-model wiring check.",
+  "production_usage_note": "The unchanged product adapter discards raw usage on protocol failure; missing usage retains the conservative budget reservation and is reported as unknown.",
+  "frozen_used_for_iteration": true,
+  "frozen_exposed_before_run": false,
+  "frozen_snapshot_matches": true,
+  "frozen_note": "Template families held out during development tuning. Published results are exposed; subsequent tuning must declare iteration, never claim blind results.",
+  "offline_note": "All profiles use the same deterministic fake model offline; this tests scoring/wiring, not prompt quality.",
+  "price_config": null,
+  "budget_before": {
+    "max_calls": 800,
+    "max_tokens": 2000000,
+    "calls": 782,
+    "known_tokens": 919054,
+    "unknown_tokens_reserved": 22236,
+    "inflight_reserved": 0
+  }
+}

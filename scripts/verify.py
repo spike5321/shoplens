@@ -98,6 +98,11 @@ def main() -> int:
         "--real-model", action="store_true", help="call the configured DeepSeek model"
     )
     parser.add_argument("--skip-postgres", action="store_true", help="intentionally skip DB checks")
+    parser.add_argument(
+        "--frozen-used-for-iteration",
+        action="store_true",
+        help="explicitly acknowledge exposed frozen cases in the offline regression evaluation",
+    )
     parser.add_argument("--npm", help="path to npm executable when npm is not on PATH")
     args = parser.parse_args()
 
@@ -153,7 +158,17 @@ def main() -> int:
                 run("PostgreSQL reference check", [PYTHON, "scripts/check_reference.py"]),
                 run(
                     "PostgreSQL offline evaluation",
-                    [PYTHON, "scripts/run_evals.py", "--out", f".local/verify-evals-{uuid4().hex}"],
+                    [
+                        PYTHON,
+                        "scripts/run_evals.py",
+                        "--out",
+                        f".local/verify-evals-{uuid4().hex}",
+                        *(
+                            ["--frozen-used-for-iteration"]
+                            if args.frozen_used_for_iteration
+                            else []
+                        ),
+                    ],
                 ),
             ]
         )

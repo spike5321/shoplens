@@ -1,0 +1,11 @@
+{
+  "registered_on": "2026-10-27",
+  "reference_date": "2026-09-30",
+  "note": "Registered before the fix; four focused synthetic questions, not an independent blind benchmark. Expected plans and raw-record answers stay evaluator-side.",
+  "cases": [
+    {"id": "aov-new-01", "question": "2026-08-05（含）到2026-08-12（不含）的整体客单价是多少？", "start_date": "2026-08-05", "end_date": "2026-08-12", "group_by": []},
+    {"id": "aov-new-02", "question": "2026-08-05（含）到2026-08-12（不含）各渠道的客单价是多少？", "start_date": "2026-08-05", "end_date": "2026-08-12", "group_by": ["channel"]},
+    {"id": "aov-new-03", "question": "2026-08-05（含）到2026-08-12（不含）各类别的客单价是多少？", "start_date": "2026-08-05", "end_date": "2026-08-12", "group_by": ["category"]},
+    {"id": "aov-new-04", "question": "2026-11-05（含）到2026-11-12（不含）的整体客单价是多少？", "start_date": "2026-11-05", "end_date": "2026-11-12", "group_by": []}
+  ]
+}

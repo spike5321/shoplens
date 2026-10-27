@@ -1195,3 +1195,39 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 - 实际提交 `95ec90ad30a1f30e0ff940b9f6e839621c383bec`（docs: publish actual production baseline and browser evidence）；`git push -u origin codex/production-baseline` 成功，`git ls-remote --heads origin codex/production-baseline`返回相同完整哈希。评测入口28762b9及离线准备5ba4785一并在该远端分支。未合并main、未创建PR。本段回执随后单独提交推送。
 - 临时真实API18006和Vite4173已停止；`scripts/pg.ps1 stop`正常停止本机55432数据库。`docker desktop start --timeout 45`及 `docker compose -p shoplens-stage6 --env-file .local/compose.env up -d --wait --wait-timeout 60`成功，原有db/api/web均healthy、init退出0；没有删除卷或重灌。
 - 本机5173会话接口确认provider=offline、synthetic=true、参考日2026-09-30，供用户继续教学操作。本阶段“产品实际配置回归基准”完成；仅建立现状和失败证据，不代表后续修复或连续追问阶段完成。
+
+---
+
+## 指导式客单价分组修复（2026-10-27）
+
+用户确认整体客单价应按三笔订单而非四行商品明细计数、返回一个数字，并要求继续代码定位与修复。使用 D:/Project_02 的 codex/production-baseline；不使用app附着的C:临时worktree。本次修复范围是SQL生成时的分组偏离，未改变指标口径、数据、权限、业务SQL形状或修复次数。
+
+### 定位与实施
+
+- 旧真实基准dev-26/frozen-26/frozen-28的计划group_by=[]，最终SQL却分别按day/channel/category或day分组，一次修复后仍plan_mismatch。错误发生在draft阶段；“可选dimensions与所选group_by混淆”是输入证据支持的假设，不能声称确定模型内部原因。
+- DeepSeekQueryModel.draft只传不含可选dimensions的新指标字典副本，并明确空group_by只输出value、无GROUP BY/ORDER BY。规划仍接收完整METRICS，共享字典未修改。执行器和计划校验保留。
+- 在产品改动前登记evals/aov_grouping_holdout.json四题，SHA256 f0141a7975484bcaaccc95aabba6cbdc9ece2551c82632db95d0e62fb31ccc67，改后摘要未变；这不是独立盲测。新增check_aov_grouping.py仅作显式评测入口，参考答案留在本地评分侧。
+
+### 实际命令与结果
+
+- `python -m pytest tests/test_aov_grouping.py`：改前8失败/2通过，失败点为draft仍携带可选dimensions；改后10通过。与test_production_evals.py合跑首次普通沙箱12通过/3临时目录权限错误；本机执行重跑15/15通过。Ruff首次发现1项断言顺序格式问题，修正后通过。
+- `scripts/pg.ps1 start`：成功启动现有本机55432 PostgreSQL，未初始化或重灌。
+- `python scripts/check_aov_grouping.py --out evals/runs/20261027-aov-grouping-offline`：7/7、24/24约束、0 API，退出0，只算离线接线验证。
+- `python scripts/check_aov_grouping.py --real-model --out evals/runs/20261027-aov-grouping-real`：7/7，原3题和新增4题全通过，0修复，14 API/16885Token，24/24约束，退出0。所有整体结果仅value一列一行；渠道3行、类别4行，空期间NULL；独立原始记录评分通过。
+- 初次统一验收：108离线＋18真实PG测试通过，构建/浏览器通过，但离线评测因修改源码导致冻结摘要变化而拒绝，PASS=9/FAIL=1/NOT_RUN=2、退出1。未修改旧冻结快照或绕过保护。
+- 在verify.py增加显式 `--frozen-used-for-iteration` 透传。tests/test_verify_iteration.py先1失败/1通过（不识别选项），再2/2通过；默认不传标记、不触发真实模型。
+- 最终 `.\.venv\Scripts\python.exe scripts/verify.py --frozen-used-for-iteration --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd`，设置PYTHONUTF8=1、npm目录PATH：**PASS=10/FAIL=0/NOT_RUN=2、退出0**，110离线＋18真实PG＝128项测试通过，参考核对/离线评测/前端构建/真实浏览器回归通过。两项NOT_RUN是默认未额外启用的真实能力和真实图冒烟；本阶段真实调用另有独立记录。
+- `scripts/run_evals.py --real-model --profiles production --split dev --ids dev-01 dev-07 dev-13 dev-19 --workers 1 --frozen-used-for-iteration --out evals/runs/20261027-aov-other-metrics`：实付/退款/净收款/订单数4/4正确，0修复，8 API/9449Token，24/24约束，退出0。
+
+### 审阅、预算与限制
+
+- 独立只读审阅产品改动与定向脚本，无Critical/Important。Minor暂缓：check_aov_grouping.py读取提交号依赖调用目录；本轮确实从项目根目录执行，摘要和HEAD匹配，报告明确要求根目录运行。后续verify透传改动由RED→GREEN与完整验收覆盖，没有再次调用审阅或模型。
+- 审阅未判断全量质量、真实修复成功率、参考算法实现：本阶段只报11题定向/抽查，均0修复，不外推总体质量或修复率；评分沿用独立原始记录实现并通过真实PG参考检查。
+- 本轮22 API/26334已知Token、新增未知预留0；累计790/800 API，928503已知＋22236历史未知预留＝950739/2000000 Token，在途0、剩余10调用。未重置预算。
+- 报告docs/aov-grouping-fix.md；原始结果在上述三个evals/runs目录。运行时HEAD为579e260，修改尚未提交，manifest同时记录实际源码摘要；不把HEAD当作未提交源码的完整版本。
+- 未重跑完整80题；未验证长期稳定性、新提示词的全部分组/比较/Top N真实质量或新的真实模型网页场景。超长日期拒绝、离线重复追问、连续追问均未修改。原有7题集中真实表现改善，不保证永不复发。
+- 验收前Docker引擎未运行，stop web报管道不存在；浏览器验收独立启动本机服务后通过。验收后停止本机PG，启动原有Docker演示恢复流程，不重建镜像；网页仍是原镜像离线演示，本轮修复在源码和本机真实评测中验证。
+
+### 交接状态
+
+修复与验收已完成，待凭据/产物检查、提交推送和远端确认。不能在确认前写已推送。用户下一步可走读报告中的SQL，解释COUNT(DISTINCT order_id)、无GROUP BY及NULLIF各自解决的问题。

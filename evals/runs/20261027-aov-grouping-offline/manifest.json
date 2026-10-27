@@ -1,0 +1,32 @@
+{
+  "started_at": "2026-10-27T10:15:38.658830+00:00",
+  "provider": "offline",
+  "model_id": "offline-query-v1",
+  "reference_date": "2026-09-30",
+  "temperature": 0,
+  "max_repair_count": 1,
+  "source_commit": "579e260bfee21a3b24ae7efa237ac76be6453532",
+  "source_sha256": {
+    "backend/app/query_model.py": "b34b3fedb301bee5df24d86f71e6c2e055eadad385afbb5463e822c3583d59eb",
+    "backend/app/query_plan.py": "cd46225727375c4b2ff1d236c478f2b5f006587a87bd05556d8728c82e77a361",
+    "backend/app/query_graph.py": "cf83e999bdb6fc1aa3e7314f9c2918d14dcf03348fbddc780c47d86cf0c61fc5",
+    "evals/aov_grouping_holdout.json": "f0141a7975484bcaaccc95aabba6cbdc9ece2551c82632db95d0e62fb31ccc67",
+    "scripts/check_aov_grouping.py": "46b8e80fc2c41bae2ddc041502360307e03c34b603bbd9e22c15253d7acddfbf",
+    "evals/production.py": "e1ab419672addc9a12951641e23170d3ba3858caf4bcaddc482a58a23e4481d6",
+    "evals/runner.py": "e113bd0c693f8b17608ec10e393a268591fd7d329c1b48214a9d333a871c309f",
+    "evals/reference.py": "a55f0b7e30e09c382cdf3cd4baa84118c62a731ebc82ef148fb15483a59b8d48",
+    "evals/cases.py": "99b4e7a6f27eb5c7a729b3ffa0fc759ea7ae152df5a7af2d897b9bd56393a423",
+    "data/metrics.yaml": "206e29a3f6435aa2800cfefa0908a9172aa7c496b02e29896b11f2f1ff24e59d"
+  },
+  "case_ids": [
+    "dev-26",
+    "frozen-26",
+    "frozen-28",
+    "aov-new-01",
+    "aov-new-02",
+    "aov-new-03",
+    "aov-new-04"
+  ],
+  "note": "Three exposed regressions and four preregistered focused cases; not a blind or full quality benchmark. Independent raw-record scoring stays evaluator-side.",
+  "budget_before": null
+}

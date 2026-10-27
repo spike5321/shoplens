@@ -1,0 +1,70 @@
+{
+  "completed_at": "2026-10-27T10:20:23.216369+00:00",
+  "requested": 4,
+  "completed": 4,
+  "constraints_passed": 24,
+  "constraints_total": 24,
+  "metrics": {
+    "production/dev": {
+      "cases": 4,
+      "result_correct": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "all_behavior_correct": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "sql_success_answerable": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "sql_success_when_attempted": {
+        "passed": 4,
+        "total": 4,
+        "rate": 1.0
+      },
+      "clarification_initial": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "rejection_correct": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "false_rejections": 0,
+      "unnecessary_clarifications": 0,
+      "repair_success": {
+        "passed": 0,
+        "total": 0,
+        "rate": null
+      },
+      "p50_ms": 2247,
+      "p95_ms": 3123,
+      "latency_note": "small sample; descriptive quantiles only",
+      "adapter_calls": 8,
+      "api_calls": 8,
+      "known_tokens": {
+        "input_tokens": 8592,
+        "output_tokens": 857,
+        "total_tokens": 9449
+      },
+      "unknown_usage_calls": 0,
+      "cost": null,
+      "failure_classes": {}
+    }
+  },
+  "budget_after": {
+    "max_calls": 800,
+    "max_tokens": 2000000,
+    "calls": 790,
+    "known_tokens": 928503,
+    "unknown_tokens_reserved": 22236,
+    "inflight_reserved": 0
+  }
+}

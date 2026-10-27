@@ -232,6 +232,8 @@ class DeepSeekQueryModel:
         system = (
             "按经过确认的计划生成 PostgreSQL SQL。只返回 SqlDraft；每个期间一条查询，当前期间在前。"
             "只使用指标对应视图。只允许单层 SELECT，不使用 CTE/JOIN/UNION/其他过滤。"
+            "分组只由 plan.group_by 决定，不得从可用字段或指标说明推断额外维度。"
+            "plan.group_by=[] 表示总体聚合：SELECT 只输出 value，不得出现 GROUP BY、ORDER BY 或维度列。"
             "输出列按 group_by 顺序加 value；渠道/类别用原列；day 用 CAST(时间字段 AT TIME ZONE 'Asia/Shanghai' AS DATE) AS day。"
             "paid_amount: COALESCE(SUM(paid_cents),0) AS value；successful_refund/period_net_receipt: COALESCE(SUM(amount_cents),0) AS value；"
             "paid_order_count: COUNT(DISTINCT order_id) AS value；average_order_value: CAST(SUM(paid_cents) AS NUMERIC)/NULLIF(COUNT(DISTINCT order_id),0) AS value。"
@@ -245,7 +247,13 @@ class DeepSeekQueryModel:
             system,
             {
                 "plan": plan.model_dump(mode="json"),
-                "metric": METRICS[plan.metric_id],
+                # Planning chooses from the available dimensions; drafting only
+                # needs the selected plan, not another menu of grouping options.
+                "metric": {
+                    key: value
+                    for key, value in METRICS[plan.metric_id].items()
+                    if key != "dimensions"
+                },
                 "schema": public_schema(),
                 "repair": repair,
                 "previous_sqls": previous_sqls,

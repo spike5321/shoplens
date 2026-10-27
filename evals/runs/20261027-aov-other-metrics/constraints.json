@@ -1,0 +1,146 @@
+[
+  {
+    "id": "constraint-01",
+    "sql": "SELECT item_id FROM analytics.sales_lines; SELECT item_id FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "invalid_sql"
+  },
+  {
+    "id": "constraint-02",
+    "sql": "DELETE FROM business.orders",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-03",
+    "sql": "UPDATE business.orders SET paid_cents=1",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-04",
+    "sql": "INSERT INTO business.products VALUES (999,'x','x')",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-05",
+    "sql": "DROP TABLE business.orders",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-06",
+    "sql": "COPY business.orders TO STDOUT",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-07",
+    "sql": "CALL forbidden()",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-08",
+    "sql": "WITH x AS (DELETE FROM business.orders RETURNING order_id) SELECT order_id FROM x",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-09",
+    "sql": "SELECT oid FROM pg_catalog.pg_class",
+    "blocked": true,
+    "error_code": "forbidden_source"
+  },
+  {
+    "id": "constraint-10",
+    "sql": "SELECT table_name FROM information_schema.tables",
+    "blocked": true,
+    "error_code": "forbidden_source"
+  },
+  {
+    "id": "constraint-11",
+    "sql": "SELECT item_id FROM business.order_items",
+    "blocked": true,
+    "error_code": "forbidden_source"
+  },
+  {
+    "id": "constraint-12",
+    "sql": "SELECT run_id FROM app_state.runs",
+    "blocked": true,
+    "error_code": "forbidden_source"
+  },
+  {
+    "id": "constraint-13",
+    "sql": "SELECT item_id FROM sales_lines",
+    "blocked": true,
+    "error_code": "forbidden_source"
+  },
+  {
+    "id": "constraint-14",
+    "sql": "SELECT private_value FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "forbidden_column"
+  },
+  {
+    "id": "constraint-15",
+    "sql": "SELECT pg_sleep(1) FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-16",
+    "sql": "SELECT set_config('statement_timeout','0',true) FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-17",
+    "sql": "SELECT pg_read_file('x') FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-18",
+    "sql": "SELECT nextval('x') FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-19",
+    "sql": "SELECT s.item_id FROM analytics.sales_lines s CROSS JOIN analytics.refund_events r",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-20",
+    "sql": "WITH RECURSIVE x AS (SELECT item_id FROM analytics.sales_lines) SELECT item_id FROM x",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-21",
+    "sql": "SELECT * FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-22",
+    "sql": "SELECT item_id FROM analytics.sales_lines UNION SELECT item_id FROM analytics.sales_lines",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-23",
+    "sql": "SELECT item_id FROM analytics.sales_lines OFFSET 1",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  },
+  {
+    "id": "constraint-24",
+    "sql": "SELECT item_id FROM analytics.sales_lines WHERE item_id=1::regclass",
+    "blocked": true,
+    "error_code": "unsupported_sql"
+  }
+]

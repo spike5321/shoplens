@@ -1,0 +1,17 @@
+{
+  "completed_at": "2026-10-27T10:16:19.838066+00:00",
+  "requested": 7,
+  "completed": 7,
+  "correct": 7,
+  "repairs": 0,
+  "api_calls": 14,
+  "constraints_passed": 24,
+  "budget_after": {
+    "max_calls": 800,
+    "max_tokens": 2000000,
+    "calls": 782,
+    "known_tokens": 919054,
+    "unknown_tokens_reserved": 22236,
+    "inflight_reserved": 0
+  }
+}
