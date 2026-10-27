@@ -1188,3 +1188,10 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 - 旧80题已曝光，本轮是回归基准，不是新题盲测；模型别名/时间与对照配置不同，不能把与阶段5数字差异宣称为本轮优化。完整80题为内核/内存checkpoint运行，4个页面场景单独核对；不外推全量HTTP、长期运行、并发或公网能力。
 - 下一步可选dev-26客单价作为个人修复教学案例，但需先制定新保留题；本轮未修该问题、未修离线重复日期文案，也未实现连续追问。
 - 产品代码与入口自28762b9后未改；独立代码审阅无待处理问题。当前剩余工作为报告/原始结果凭据与产物扫描、提交推送和远端确认，不能提前写已推送。
+
+### 本阶段交付与推送回执
+
+- 待提交的17个报告/证据文件通过配置凭据精确值与URL编码扫描、本地产物检查；新增JSON另检敏感字段，截图经过视觉检查，`git diff --cached --check`通过。完整报告数据与summary的80题、68/71以及页面5/5断言核对通过。
+- 实际提交 `95ec90ad30a1f30e0ff940b9f6e839621c383bec`（docs: publish actual production baseline and browser evidence）；`git push -u origin codex/production-baseline` 成功，`git ls-remote --heads origin codex/production-baseline`返回相同完整哈希。评测入口28762b9及离线准备5ba4785一并在该远端分支。未合并main、未创建PR。本段回执随后单独提交推送。
+- 临时真实API18006和Vite4173已停止；`scripts/pg.ps1 stop`正常停止本机55432数据库。`docker desktop start --timeout 45`及 `docker compose -p shoplens-stage6 --env-file .local/compose.env up -d --wait --wait-timeout 60`成功，原有db/api/web均healthy、init退出0；没有删除卷或重灌。
+- 本机5173会话接口确认provider=offline、synthetic=true、参考日2026-09-30，供用户继续教学操作。本阶段“产品实际配置回归基准”完成；仅建立现状和失败证据，不代表后续修复或连续追问阶段完成。
