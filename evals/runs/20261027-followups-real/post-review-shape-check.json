@@ -1,0 +1,26 @@
+{
+  "checked_existing_real_records": true,
+  "new_api_calls": 0,
+  "checks": [
+    {
+      "run_id": "d60befa7489548bcb5436891f7396e88",
+      "no_extra_comparison_or_top_n": true,
+      "table_count": 1
+    },
+    {
+      "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+      "no_extra_comparison_or_top_n": true,
+      "table_count": 1
+    },
+    {
+      "run_id": "90419915c54841a9961b0a839f477bcc",
+      "no_extra_comparison_or_top_n": true,
+      "table_count": 1
+    },
+    {
+      "run_id": "5ca0b4fb6888449e949397d09db781fa",
+      "no_extra_comparison_or_top_n": true,
+      "table_count": 1
+    }
+  ]
+}

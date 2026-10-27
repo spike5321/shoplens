@@ -20,6 +20,7 @@ export interface HistoryItem {
   question: string;
   status: Status;
   created_at: string;
+  source_run_id: string | null;
 }
 export interface DataTable {
   columns: string[];
@@ -55,6 +56,7 @@ export interface Report {
   explanation: string;
 }
 export interface Run extends HistoryItem {
+  source_question: string | null;
   revision: number;
   updated_at: string;
   clarification_expires_at: string | null;
@@ -126,6 +128,8 @@ export const loadRun = (id: string) =>
   json<Run>(`/runs/${encodeURIComponent(id)}`);
 export const createRun = (question: string, csrf: string) =>
   json<Run>("/runs", { question }, csrf);
+export const followupRun = (run: Run, question: string, csrf: string) =>
+  json<Run>(`/runs/${run.run_id}/followup`, { question }, csrf);
 export const clarifyRun = (run: Run, text: string, csrf: string) =>
   json<Run>(
     `/runs/${run.run_id}/clarify`,

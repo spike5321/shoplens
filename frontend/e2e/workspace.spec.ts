@@ -74,10 +74,19 @@ async function remember(context: BrowserContext) {
   if (cookie) tokens.push(cookie.value);
 }
 async function ask(page: Page, question: string, status = "已完成") {
+  const previous = page.url();
   await page.getByLabel("你想了解什么？").fill(question);
   await page.getByRole("button", { name: "开始查询" }).click();
+  await expect(page).not.toHaveURL(previous);
   await expect(page.getByRole("status")).toHaveText(status);
   return new URL(page.url()).searchParams.get("run")!;
+}
+async function followup(page: Page, question: string, status = "已完成") {
+  const previous = page.url();
+  await page.getByLabel("继续追问内容").fill(question);
+  await page.getByRole("button", { name: "提交追问" }).click();
+  await expect(page).not.toHaveURL(previous);
+  await expect(page.getByRole("status")).toHaveText(status);
 }
 async function csrf(context: BrowserContext) {
   return (await (await context.request.get("/api/session")).json()).csrf_token;
@@ -97,6 +106,83 @@ test.afterAll(async () => {
   cleanup.stdin!.end(tokens.join("\n"));
   const [code] = await once(cleanup, "exit");
   expect(code).toBe(0);
+});
+
+test("结果追问保留来源、澄清、刷新及进程重启，主输入独立", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    baseURL: "http://127.0.0.1:5173",
+  });
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto("/");
+  const original = await ask(page, "2026年9月整体客单价是多少？");
+  const originalRows = await page.locator(".result table tbody").innerText();
+  await followup(page, "那各渠道呢？");
+  const child = new URL(page.url()).searchParams.get("run")!;
+  expect(child).not.toBe(original);
+  await expect(page.locator(".followup-source")).toContainText(
+    "2026年9月整体客单价是多少？",
+  );
+  await expect(page.locator(".current-result table tbody tr")).toHaveCount(3);
+  expect(await page.locator(".followup-source table tbody").innerText()).toBe(
+    originalRows,
+  );
+  await expect(page.locator(".current-result .chart canvas")).toBeVisible();
+  await mkdir(resolve(root, ".local", "screenshots"), { recursive: true });
+  await page.screenshot({
+    path: resolve(root, ".local", "screenshots", "followup-workspace.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.reload();
+  await expect(page.locator(".current-result table tbody tr")).toHaveCount(3);
+  expect(await page.locator(".followup-source table tbody").innerText()).toBe(
+    originalRows,
+  );
+  await followup(page, "改成2026年8月");
+  await expect(page.locator(".current-result")).toContainText("2026-08-01");
+  await expect(page.locator(".current-result table tbody tr")).toHaveCount(3);
+  await followup(page, "那销售额呢？", "待补充");
+  const paused = new URL(page.url()).searchParams.get("run")!;
+  await stopServer();
+  await startServer();
+  await page.reload();
+  await expect(page.getByRole("status")).toHaveText("待补充");
+  await page.getByLabel("补充说明").fill("期间净收款");
+  await page.getByRole("button", { name: "提交补充" }).click();
+  await expect(page.getByRole("status")).toHaveText("已完成");
+  const done = await (await context.request.get(`/api/runs/${paused}`)).json();
+  expect(done.plan.metric_id).toBe("period_net_receipt");
+  expect(done.plan.start_date).toBe("2026-08-01");
+  expect(done.source_run_id).toBeTruthy();
+  await expect(
+    page.getByRole("navigation", { name: "查询历史" }),
+  ).toContainText("追问");
+  await ask(page, "那各渠道呢？", "暂不支持");
+  const independent = new URL(page.url()).searchParams.get("run")!;
+  expect(
+    (await (await context.request.get(`/api/runs/${independent}`)).json())
+      .source_run_id,
+  ).toBeNull();
+  await page.goto(`/?run=${child}`);
+  await expect(page.locator(".current-result table tbody tr")).toHaveCount(3);
+  await page.getByRole("button", { name: "查看来源查询" }).click();
+  await expect(page.getByRole("status")).toHaveText("已完成");
+  expect(new URL(page.url()).searchParams.get("run")).toBe(original);
+  expect(await page.locator(".current-result table tbody").innerText()).toBe(
+    originalRows,
+  );
+  await remember(context);
+  await context.close();
+  contexts.splice(contexts.indexOf(context), 1);
 });
 
 test("真实查询、图表、澄清、失败、刷新、隔离和进程重启", async ({

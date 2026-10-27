@@ -35,6 +35,7 @@ class QueryState(TypedDict, total=False):
     owner_id: str
     run_id: str
     question: str
+    followup: dict | None
     reference_date: str
     provider: str
     model_id: str
@@ -116,11 +117,15 @@ def build_query_graph(model, executor: QueryExecutor, settings: Settings, checkp
         return node
 
     def plan_node(state):
+        options = {}
+        if state.get("followup"):
+            options["base_plan"] = state["followup"]["plan"]
         reply = model.plan(
             state["question"],
             state["clarifications"],
             state["reference_date"],
             remaining_ms=ACTIVE_BUDGET_MS - state["active_ms"],
+            **options,
         )
         plan = QueryPlan.model_validate(reply.value)
         text = state["question"] + "\n" + "\n".join(state["clarifications"])
@@ -131,7 +136,9 @@ def build_query_graph(model, executor: QueryExecutor, settings: Settings, checkp
                 plan = QueryPlan(
                     decision="clarify", clarification_question="销售额是指实付金额还是期间净收款？"
                 )
-            elif not re.search(r"\d{1,2}月|\d{4}-\d{2}-\d{2}|今天|上月|上周", text):
+            elif not state.get("followup") and not re.search(
+                r"\d{1,2}月|\d{4}-\d{2}-\d{2}|今天|上月|上周", text
+            ):
                 plan = QueryPlan(decision="clarify", clarification_question="请明确日期范围。")
         if plan.decision == "clarify" and state["clarification_count"] >= MAX_CLARIFICATIONS:
             raise ModelError("clarification_limit")
@@ -298,7 +305,14 @@ class QueryService:
         self.graph.invoke(initial, self.config(initial["run_id"]))
         return self.read(initial["run_id"], owner_id=owner_id)
 
-    def initial_state(self, question: str, *, owner_id: str, run_id: str | None = None) -> dict:
+    def initial_state(
+        self,
+        question: str,
+        *,
+        owner_id: str,
+        run_id: str | None = None,
+        followup: dict | None = None,
+    ) -> dict:
         """服务端创建元数据后可提供自己的随机 run_id；不用于浏览器输入。"""
         if not isinstance(question, str) or not 1 <= len(question.strip()) <= 2000:
             raise ValueError("invalid_question")
@@ -310,6 +324,7 @@ class QueryService:
             "owner_id": owner_id,
             "run_id": run_id,
             "question": question.strip(),
+            "followup": followup,
             "reference_date": self.settings.demo_reference_date,
             "provider": self.model.provider,
             "model_id": self.model.model_id,

@@ -1,0 +1,18 @@
+[PASS] Ruff lint
+[PASS] Ruff format
+[PASS] Offline pytest
+  ........................................................................ [ 52%]
+  .................................................................        [100%]
+[PASS] Offline LangGraph demo
+[PASS] Offline model protocol stub
+[PASS] PostgreSQL integration pytest
+  .....................                                                    [100%]
+[PASS] PostgreSQL reference check
+[PASS] PostgreSQL offline evaluation
+[PASS] Frontend build
+[PASS] PostgreSQL browser workspace
+[NOT_RUN] Real model smoke
+  opt in with --real-model
+[NOT_RUN] Real graph smoke
+  opt in with --real-model
+Summary: PASS=10 FAIL=0 NOT_RUN=2

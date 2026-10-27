@@ -23,6 +23,7 @@ from app.query_checkpoint import postgres_checkpointer
 from app.query_executor import QueryError, QueryExecutor
 from app.query_graph import QueryService
 from app.query_model import ModelError
+from app.query_plan import QueryPlan
 
 COOKIE = "shoplens_session"
 SESSION_SECONDS = 7 * 24 * 3600
@@ -63,9 +64,12 @@ class Answer(BaseModel):
 def public_run(row: dict) -> dict:
     """不向浏览器暴露 owner、内部 thread 或指标上下文。"""
     state = row["snapshot"]
+    source = state.get("followup") or {}
     return {
         "run_id": row["run_id"],
         "question": row["question"],
+        "source_run_id": source.get("run_id"),
+        "source_question": source.get("question"),
         "status": row["status"],
         "revision": row["revision"],
         "created_at": row["created_at"].isoformat(),
@@ -205,14 +209,34 @@ class Workspace:
         if not self.slots.acquire(blocking=False):
             raise HTTPException(429, "已有两项查询正在执行，请稍后再试。")
 
-    def start(self, question, owner):
+    def followup(self, run_id, question, owner):
+        row = self.read(run_id, owner)
+        if row["status"] != "succeeded":
+            raise HTTPException(409, "只能基于已完成的成功结果继续追问。")
+        try:
+            plan = QueryPlan.model_validate(row["snapshot"].get("plan"))
+            if plan.decision != "ready":
+                raise ValueError
+        except ValueError:
+            raise HTTPException(409, "原查询条件不完整，请重新查询。") from None
+        return self.start(
+            question,
+            owner,
+            followup={
+                "run_id": row["run_id"],
+                "question": row["question"],
+                "plan": plan.model_dump(mode="json"),
+            },
+        )
+
+    def start(self, question, owner, *, followup=None):
         self.reserve()
         run_id = uuid.uuid4().hex
         try:
             with self.pool.connection() as conn:
                 conn.execute(
-                    "INSERT INTO app_state.runs(run_id,owner_id,question,status) VALUES (%s,%s,%s,'running')",
-                    (run_id, owner, question),
+                    "INSERT INTO app_state.runs(run_id,owner_id,question,status,snapshot) VALUES (%s,%s,%s,'running',%s)",
+                    (run_id, owner, question, Jsonb({"followup": followup})),
                 )
             self.workers.submit(self.work, run_id, owner, question, None)
         except Exception:
@@ -250,7 +274,7 @@ class Workspace:
         with self.pool.connection() as conn:
             conn.execute(
                 """
-                UPDATE app_state.runs SET snapshot=%s, status=%s, updated_at=now(),
+                UPDATE app_state.runs SET snapshot=%s || jsonb_build_object('followup', snapshot->'followup'), status=%s, updated_at=now(),
                     clarification_expires_at=CASE WHEN %s='awaiting_clarification'
                         THEN now()+interval '24 hours' ELSE NULL END
                 WHERE run_id=%s
@@ -269,10 +293,13 @@ class Workspace:
     def work(self, run_id, owner, question, answer):
         state = {}
         try:
+            state = {"followup": self.read(run_id, owner)["snapshot"].get("followup")}
             with postgres_checkpointer(self.settings) as saver:
                 service = QueryService(self.reader, self.settings, saver)
                 if answer is None:
-                    command = service.initial_state(question, owner_id=owner, run_id=run_id)
+                    command = service.initial_state(
+                        question, owner_id=owner, run_id=run_id, followup=state["followup"]
+                    )
                 else:
                     state = service.read(run_id, owner_id=owner)
                     if state["status"] != "awaiting_clarification":
@@ -351,7 +378,7 @@ def history(request: Request, response: Response):
     owner = workspace.session(request, response)["owner_id"]
     with workspace.pool.connection() as conn:
         rows = conn.execute(
-            "SELECT run_id,question,status,created_at FROM app_state.runs WHERE owner_id=%s ORDER BY created_at DESC LIMIT 50",
+            "SELECT run_id,question,status,created_at,snapshot->'followup'->>'run_id' AS source_run_id FROM app_state.runs WHERE owner_id=%s ORDER BY created_at DESC LIMIT 50",
             (owner,),
         ).fetchall()
     return {"runs": rows, "limit": 50}
@@ -382,4 +409,13 @@ def retry_run(run_id: str, request: Request, response: Response):
     if row["status"] not in {"failed", "interrupted"} and not expired:
         raise HTTPException(409, "当前查询无需重试。")
     # 新 run 从原问题重新解析，重新澄清；不假称自动恢复或恰好执行一次。
-    return public_run(workspace.start(row["question"], owner))
+    return public_run(
+        workspace.start(row["question"], owner, followup=row["snapshot"].get("followup"))
+    )
+
+
+@router.post("/runs/{run_id}/followup", status_code=202)
+def followup_run(run_id: str, body: Question, request: Request, response: Response):
+    workspace = runtime(request)
+    owner = workspace.session(request, response)["owner_id"]
+    return public_run(workspace.followup(run_id, body.question, owner))

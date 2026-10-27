@@ -83,6 +83,15 @@ cd ..
 
 ## 停止与恢复
 
+已有 `shoplens-stage6` 演示更新源码时，可仅构建和替换应用服务，保留数据库及原查询历史；本次追问功能没有结构迁移：
+
+```powershell
+docker compose -p shoplens-stage6 --env-file .local/compose.env build api web
+docker compose -p shoplens-stage6 --env-file .local/compose.env up -d --no-deps --wait --wait-timeout 60 api web
+```
+
+此路径不运行 init、不重灌数据、不删除卷。完成后需重新验证页面/接口，不能把旧镜像的表现当作新源码证据。
+
 ```powershell
 docker compose --env-file .local/compose.env down
 # 保留命名数据卷；再次 up 使用相同密码，保留查询历史

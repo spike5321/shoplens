@@ -1,0 +1,40 @@
+{
+  "completed_at": "2026-10-27T11:21:18.222795+00:00",
+  "checks": [
+    {
+      "id": "source",
+      "passed": true
+    },
+    {
+      "id": "F01",
+      "passed": true
+    },
+    {
+      "id": "F02",
+      "passed": true
+    },
+    {
+      "id": "F03-pause",
+      "passed": true
+    },
+    {
+      "id": "F03-resume",
+      "passed": true
+    },
+    {
+      "id": "F04-source-preserved",
+      "passed": true
+    }
+  ],
+  "passed": 6,
+  "expected_checks": 6,
+  "api_calls": 9,
+  "budget_after": {
+    "max_calls": 800,
+    "max_tokens": 2000000,
+    "calls": 799,
+    "known_tokens": 940158,
+    "unknown_tokens_reserved": 22236,
+    "inflight_reserved": 0
+  }
+}

@@ -1236,3 +1236,56 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 
 - 22个待提交文件通过配置凭据精确值/URL编码及本地产物扫描，`git diff --cached --check`通过。主体提交 **13999bf8fa42ccc976b4b9e6ade7c2689351ab09**（fix: keep SQL grouping aligned with the confirmed query plan），`git push origin codex/production-baseline`成功，`git ls-remote --heads origin codex/production-baseline`与本地完整哈希一致。未合并main、未创建PR。本段回执随后单独提交推送。
 - `scripts/pg.ps1 stop`成功；`docker desktop start --timeout 45`及原项目`compose up -d --wait --wait-timeout 60`完成，db/api/web均healthy、init退出0。5173接口确认provider=offline、synthetic=true、reference_date=2026-09-30；保留旧镜像/数据卷，未将源码修复宣称为新容器部署。
+
+---
+
+## 成功结果继续追问（2026-10-27）
+
+本节是最新状态。实际工作位置 `D:\Project_02`，分支 `codex/production-baseline`，初始HEAD为用户给定的 **3c323910f4c375b11c1d7bf84522d7775411a982**，初始工作区干净。未使用app附着的C:临时工作区。
+用户选择明确绑定成功结果的入口，并授权完成实现、验收、提交和推送；未扩大为自动关联主输入或聊天。
+
+### 方案与实现
+
+- 修改产品前登记 `docs/followups.md` 的F01–F11，方案与计划记录在该文档及 `docs/superpowers/plans/2026-10-27-followups.md`。
+- 新增 `POST /api/runs/{id}/followup`，只接受question。沿用Cookie/CSRF和owner查询校验，来源必须succeeded且有合法ready计划；不存在/跨会话404，非成功409，客户端夹带条件/权限422。
+- 服务端从原snapshot复制基础计划，离线解析器/真实模型输出结构化条件变更，再合并为QueryPlan。未明确的条件继承，明确修改优先，销售额口径等歧义澄清；未知要求不默默沿用旧条件。
+- 新run保存直接来源ID、问题、基础计划；来源计划不随浏览器提交。JSONB/checkpoint复用，无结构迁移。结果与历史公开来源ID，页面展示原结果和回看入口，主输入保持独立。
+- 澄清恢复同一checkpoint；追问失败/中断/到期重试创建新run但保留来源和基础计划。数据库保存使来源不可被缺失状态覆盖。仍经原计划/SQL形状/AST安全检查、reader只读执行，修复最多一次。
+
+### 实际命令与测试
+
+- `python -m pytest tests/test_followups.py -m 'not integration'` 首次12失败/4通过；新增页面测试在页面实现前因缺追问输入超时。实现后通过，后续审阅问题先补失败回归再修复。
+- `scripts/pg.ps1 start`：启动已有本机实例。首次普通沙箱连接挂起/503；宿主诊断确认实例未持续运行，宿主启动后改为顺序测试。曾与浏览器服务争用单进程锁，明确保留为测试执行错误，未删除数据/重灌。
+- `python -m pytest tests/test_followups.py`：29/29通过后，又补无效Top N/多期间澄清一项；最终30项（27离线、3真实PG）均由完整验收覆盖。
+- 评分侧初次误用 `local()` 默认中午导致渠道客单价边界不符；改为00:00后独立原始记录与实际SQL结果一致。未改产品时区/日期口径或数据库数据。
+- 浏览器新增用例初次过早读取旧URL，修改为等待新run URL；覆盖整体→渠道、日期改写、原结果保留、刷新、源查询回看、历史标记、移动端无横向溢出、重启后澄清恢复和主输入独立。
+- 中间统一验收曾PASS=9/FAIL=1/NOT_RUN=2：旧浏览器用例的第二会话页面定位超时。直接全量浏览器重跑2/2；关闭新用例结束后的上下文，最后统一验收通过。未将中间失败计为通过。
+- 最终命令（PYTHONUTF8=1，npm所在目录已加入PATH）：`.\.venv\Scripts\python.exe scripts/verify.py --frozen-used-for-iteration --npm D:\Project_02\.local\tooling\node_modules\.bin\npm.cmd`：**PASS=10 / FAIL=0 / NOT_RUN=2，退出0**。
+  **137离线＋21真实PG＝158项pytest通过**；Ruff、参考核对（80组SQL/Python、14手算）、离线评测、前端构建及两项真实Edge流程通过。两项NOT_RUN为默认未再次启用的通用真实模型/图冒烟；没有skip-postgres。
+  完整汇总 `docs/evidence/followups-verify.txt`。
+- `scripts/check_followups.py --out evals/runs/20261027-followups-offline` 和 `...-offline-final`：均6/6、API=0，真实PostgreSQL，不算真实模型质量。
+- `scripts/check_followups.py --real-model --out evals/runs/20261027-followups-real`：**6/6、9 API、11655已知Token、0修复，退出0**。
+  包括原问题、渠道追问、明确改8月、销售额澄清/恢复及原结果保留；四个成功结果由独立原始记录计算评分。模型只收到合成问题/澄清、基础计划、字典及原有SQL上下文，不含参考答案、原始订单或数据库凭据。
+
+### 审阅、预算及限制
+
+- 独立只读审阅确认3类Important：初始读取异常泄漏并发槽位、取消比较与改日期组合被误解析、离线解析忽略不支持条件。均由新增失败测试复现后修复。额外真实PG故障测试确认首次读库失败时来源仍保留且重试完成。
+- Minor评分缺少额外比较/Top N/表数检查也已补齐；既有真实记录严格形状复核4/4，0新增调用，另存 `post-review-shape-check.json`，未覆盖原始记录。
+- 预算重新核对790/800后才使用，本次增加9次；最新 **799/800**，剩余**1**；940158已知＋22236历史未知预留＝962394/2000000 Token，在途0。不重置、不新增额度，不估算费用。
+- 真实调用发生于最终审阅防御性修复前，manifest同时记录运行时未提交源码摘要和基线HEAD；之后仅修离线解析、worker异常/状态保存与评分，真实模型提示词/patch合并/SQL规则未改。最终实现重新通过离线、真实PG与浏览器；余额不足再跑9调用序列，未声称最终提交重跑真实模型。
+- 未重跑完整80题真实模型、真实模型浏览器、长期稳定性/负载或公网部署。旧冻结题已曝光，明确使用iteration标记，不称盲测。仍只支持现有五指标/日期/分组/受限比较与Top N；离线有限语法未完整识别时澄清/拒绝。
+- 详情、使用步骤及截图见 `docs/followups.md`，真实/离线记录在三个上述evals/runs目录。图片已视觉检查，无Key/Cookie。
+
+### 新源码容器交付
+
+- 验收时仅暂时stop原 `shoplens-stage6` 的web释放5173。最终执行 `docker compose -p shoplens-stage6 --env-file .local/compose.env build api web` 及 `up -d --no-deps --wait --wait-timeout 60 api web`，均成功。
+- 只替换api/web，未运行init、未重灌、未删除卷。替换前后原12条历史的ID/问题/状态SHA256完全一致；sales_lines/refund_events/cash_events分别5641/684/6325且不变。证据 `docs/evidence/followups-container-preservation.json`。
+- 新镜像真实Edge页面验证5/5（provider离线、新渠道追问关联、刷新/来源、原结果不变、跨会话404），退出0；证据 `docs/evidence/followups-container-browser.json` 和 `docs/assets/followup-workspace.png`。不把旧镜像当作本次证据。
+- 当前 http://127.0.0.1:5173 已是本次新镜像的离线演示，可直接使用追问。db/api/web均healthy，init原创建时间不变且Exited(0)。大图表chunk>500kB告警沿用，构建成功。
+
+### 提交交付
+
+实现、最终验收和本地新镜像交付已完成，待凭据/产物检查、提交及远端确认；此处不提前写已推送。未合并main、未创建PR。推送回执随后补充。
+
+- 提交前29个文件通过已配置凭据精确值/URL编码扫描、JSON私有字段检查和本地数据/构建产物检查；截图已视觉检查，`git diff --cached --check`通过。
+- 本机测试PostgreSQL已由宿主 `scripts/pg.ps1 stop` 确认正常停止；容器db/api/web继续健康运行，5173保留新镜像供用户体验。

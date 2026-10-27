@@ -774,3 +774,39 @@ pre {
     transition: none;
   }
 }
+/* Followups keep the source visible and the independent question form separate. */
+.followup-form,
+.followup-source {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #d7e0dc;
+  border-radius: 12px;
+  background: #f6f9f7;
+  overflow-wrap: anywhere;
+}
+.followup-form h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.followup-form p {
+  color: #52665d;
+  font-size: 14px;
+}
+.followup-form label {
+  display: block;
+  margin: 12px 0 8px;
+}
+.followup-form input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid #aabbaf;
+  border-radius: 8px;
+}
+.followup-source summary {
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.followup-source > button {
+  margin-bottom: 12px;
+}

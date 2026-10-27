@@ -3,6 +3,7 @@ import type { FormEvent } from "react";
 import {
   clarifyRun,
   createRun,
+  followupRun,
   formatValue,
   loadHistory,
   loadRun,
@@ -206,6 +207,9 @@ export default function App() {
   const [run, setRun] = useState<Run | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [followup, setFollowup] = useState("");
+  const [source, setSource] = useState<Run | null>(null);
+  const [sourceError, setSourceError] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [pollFailed, setPollFailed] = useState(false);
@@ -213,6 +217,23 @@ export default function App() {
   const questionInput = useRef<HTMLTextAreaElement>(null);
   const selected = useRef(id);
   selected.current = id;
+  const sourceId = run?.source_run_id;
+  useEffect(() => {
+    let live = true;
+    setSource(null);
+    setSourceError("");
+    if (sourceId)
+      loadRun(sourceId)
+        .then((value) => {
+          if (live) setSource(value);
+        })
+        .catch((e) => {
+          if (live) setSourceError(e.message);
+        });
+    return () => {
+      live = false;
+    };
+  }, [sourceId, refresh]);
   useEffect(() => {
     let live = true;
     loadSession()
@@ -235,6 +256,7 @@ export default function App() {
     let timer: number;
     setRun(null);
     setAnswer("");
+    setFollowup("");
     setError("");
     async function poll() {
       try {
@@ -304,6 +326,32 @@ export default function App() {
       setBusy(false);
     }
   }
+  async function submitFollowup(event: FormEvent) {
+    event.preventDefault();
+    if (
+      !run ||
+      run.status !== "succeeded" ||
+      !session ||
+      busy ||
+      !followup.trim()
+    )
+      return;
+    const current = run.run_id;
+    setBusy(true);
+    setError("");
+    try {
+      const result = await followupRun(
+        run,
+        followup.trim(),
+        session.csrf_token,
+      );
+      if (selected.current === current) select(result.run_id);
+    } catch (e) {
+      if (selected.current === current) setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   async function retry() {
     if (!run || !session || busy) return;
     setBusy(true);
@@ -352,7 +400,10 @@ export default function App() {
               <span className={`status-dot ${item.status}`} />
               <span className="history-text">
                 {item.question}
-                <small>{statusLabels[item.status]}</small>
+                <small>
+                  {item.source_run_id ? "追问 · " : ""}
+                  {statusLabels[item.status]}
+                </small>
               </span>
             </button>
           ))}
@@ -410,7 +461,9 @@ export default function App() {
               rows={2}
             />
             <div className="question-bottom">
-              <span>写明指标和日期，结果会更明确。</span>
+              <span>
+                独立新查询，请写明指标和日期。继续追问请使用结果下方入口。
+              </span>
               <button
                 className="primary"
                 type="submit"
@@ -456,6 +509,19 @@ export default function App() {
                 {statusLabels[run.status]}
               </span>
             </div>
+          )}
+          {run?.source_run_id && (
+            <details className="followup-source" open>
+              <summary>基于查询：{run.source_question}</summary>
+              <button onClick={() => select(run.source_run_id)}>
+                查看来源查询
+              </button>
+              {source?.run_id === run.source_run_id && source.report && (
+                <Result report={source.report} />
+              )}
+              {!source && !sourceError && <p>正在读取来源结果…</p>}
+              {sourceError && <p role="alert">{sourceError}</p>}
+            </details>
           )}
           {run?.status === "running" && (
             <section className="state-panel">
@@ -503,7 +569,28 @@ export default function App() {
             </section>
           )}
           {run?.status === "succeeded" && run.report && (
-            <Result report={run.report} />
+            <div className="current-result">
+              <Result report={run.report} />
+              <form className="followup-form" onSubmit={submitFollowup}>
+                <h2>基于这条结果继续追问</h2>
+                <p>沿用这条结果的条件，你明确修改的条件优先。</p>
+                <label htmlFor="followup">继续追问内容</label>
+                <input
+                  id="followup"
+                  value={followup}
+                  onChange={(e) => setFollowup(e.target.value)}
+                  maxLength={2000}
+                  placeholder="例如：那各渠道呢？或改成2026年8月"
+                />
+                <button
+                  className="primary"
+                  type="submit"
+                  disabled={busy || !session || !followup.trim()}
+                >
+                  提交追问
+                </button>
+              </form>
+            </div>
           )}
           {run &&
             ["failed", "interrupted", "rejected"].includes(run.status) && (

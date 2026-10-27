@@ -1,0 +1,778 @@
+[
+  {
+    "run_id": "d60befa7489548bcb5436891f7396e88",
+    "question": "2026年9月整体客单价是多少？",
+    "source_run_id": null,
+    "source_question": null,
+    "status": "succeeded",
+    "revision": 0,
+    "created_at": "2026-10-27T11:21:08.223233+00:00",
+    "updated_at": "2026-10-27T11:21:10.672031+00:00",
+    "clarification_expires_at": null,
+    "plan": {
+      "top_n": null,
+      "decision": "ready",
+      "end_date": "2026-10-01",
+      "group_by": [],
+      "metric_id": "average_order_value",
+      "start_date": "2026-09-01",
+      "unsupported_reason": null,
+      "comparison_end_date": null,
+      "comparison_start_date": null,
+      "clarification_question": null
+    },
+    "report": {
+      "plan": {
+        "top_n": null,
+        "decision": "ready",
+        "end_date": "2026-10-01",
+        "group_by": [],
+        "metric_id": "average_order_value",
+        "start_date": "2026-09-01",
+        "unsupported_reason": null,
+        "comparison_end_date": null,
+        "comparison_start_date": null,
+        "clarification_question": null
+      },
+      "chart": null,
+      "metric": {
+        "id": "average_order_value",
+        "unit": "fen_per_order",
+        "view": "analytics.sales_lines",
+        "grain": "聚合后指标",
+        "label": "客单价",
+        "definition": "同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价",
+        "dimensions": [
+          "day",
+          "channel",
+          "category"
+        ],
+        "time_field": "paid_at"
+      },
+      "tables": [
+        {
+          "rows": [
+            [
+              "18727.500000000000"
+            ]
+          ],
+          "columns": [
+            "value"
+          ],
+          "truncated": false,
+          "requested_top_n": null
+        }
+      ],
+      "comparison": [],
+      "explanation": "合成演示数据；客单价。口径：同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，1 行。\n总体：187.28 元。"
+    },
+    "sqls": [
+      "SELECT CAST(SUM(paid_cents) AS NUMERIC)/NULLIF(COUNT(DISTINCT order_id),0) AS value FROM analytics.sales_lines WHERE paid_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND paid_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ)"
+    ],
+    "events": [
+      {
+        "node": "plan",
+        "usage": {
+          "input_tokens": 1212,
+          "total_tokens": 1324,
+          "output_tokens": 112,
+          "input_token_details": {
+            "cache_read": 512
+          },
+          "output_token_details": {}
+        },
+        "run_id": "d60befa7489548bcb5436891f7396e88",
+        "provider": "deepseek",
+        "elapsed_ms": 1509,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "context",
+        "usage": null,
+        "run_id": "d60befa7489548bcb5436891f7396e88",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "draft",
+        "usage": {
+          "input_tokens": 957,
+          "total_tokens": 1084,
+          "output_tokens": 127,
+          "input_token_details": {
+            "cache_read": 768
+          },
+          "output_token_details": {}
+        },
+        "run_id": "d60befa7489548bcb5436891f7396e88",
+        "provider": "deepseek",
+        "elapsed_ms": 841,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "validate",
+        "usage": null,
+        "run_id": "d60befa7489548bcb5436891f7396e88",
+        "provider": "deepseek",
+        "elapsed_ms": 4,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "execute",
+        "usage": null,
+        "run_id": "d60befa7489548bcb5436891f7396e88",
+        "provider": "deepseek",
+        "elapsed_ms": 6,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "summarize",
+        "usage": null,
+        "run_id": "d60befa7489548bcb5436891f7396e88",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      }
+    ],
+    "error_code": null,
+    "provider": "deepseek",
+    "model_id": "deepseek-chat",
+    "model_calls": 2,
+    "repair_count": 0,
+    "active_ms": 2360,
+    "tokens": {
+      "input_tokens": 2169,
+      "total_tokens": 2408,
+      "output_tokens": 239
+    },
+    "clarifications": []
+  },
+  {
+    "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+    "question": "那各渠道呢？",
+    "source_run_id": "d60befa7489548bcb5436891f7396e88",
+    "source_question": "2026年9月整体客单价是多少？",
+    "status": "succeeded",
+    "revision": 0,
+    "created_at": "2026-10-27T11:21:10.772382+00:00",
+    "updated_at": "2026-10-27T11:21:12.997361+00:00",
+    "clarification_expires_at": null,
+    "plan": {
+      "top_n": null,
+      "decision": "ready",
+      "end_date": "2026-10-01",
+      "group_by": [
+        "channel"
+      ],
+      "metric_id": "average_order_value",
+      "start_date": "2026-09-01",
+      "unsupported_reason": null,
+      "comparison_end_date": null,
+      "comparison_start_date": null,
+      "clarification_question": null
+    },
+    "report": {
+      "plan": {
+        "top_n": null,
+        "decision": "ready",
+        "end_date": "2026-10-01",
+        "group_by": [
+          "channel"
+        ],
+        "metric_id": "average_order_value",
+        "start_date": "2026-09-01",
+        "unsupported_reason": null,
+        "comparison_end_date": null,
+        "comparison_start_date": null,
+        "clarification_question": null
+      },
+      "chart": {
+        "type": "bar",
+        "unit": "fen_per_order",
+        "labels": [
+          "广告",
+          "站外",
+          "自然"
+        ],
+        "values": [
+          "18072.316993464052",
+          "19014.479365079365",
+          "19068.328173374613"
+        ]
+      },
+      "metric": {
+        "id": "average_order_value",
+        "unit": "fen_per_order",
+        "view": "analytics.sales_lines",
+        "grain": "聚合后指标",
+        "label": "客单价",
+        "definition": "同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价",
+        "dimensions": [
+          "day",
+          "channel",
+          "category"
+        ],
+        "time_field": "paid_at"
+      },
+      "tables": [
+        {
+          "rows": [
+            [
+              "广告",
+              "18072.316993464052"
+            ],
+            [
+              "站外",
+              "19014.479365079365"
+            ],
+            [
+              "自然",
+              "19068.328173374613"
+            ]
+          ],
+          "columns": [
+            "channel",
+            "value"
+          ],
+          "truncated": false,
+          "requested_top_n": null
+        }
+      ],
+      "comparison": [],
+      "explanation": "合成演示数据；客单价。口径：同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，3 行。\n广告：180.72 元。\n站外：190.14 元。\n自然：190.68 元。"
+    },
+    "sqls": [
+      "SELECT channel, CAST(SUM(paid_cents) AS NUMERIC)/NULLIF(COUNT(DISTINCT order_id),0) AS value FROM analytics.sales_lines WHERE paid_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND paid_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ) GROUP BY channel ORDER BY channel ASC NULLS LAST"
+    ],
+    "events": [
+      {
+        "node": "plan",
+        "usage": {
+          "input_tokens": 1435,
+          "total_tokens": 1487,
+          "output_tokens": 52,
+          "input_token_details": {
+            "cache_read": 0
+          },
+          "output_token_details": {}
+        },
+        "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+        "provider": "deepseek",
+        "elapsed_ms": 779,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "context",
+        "usage": null,
+        "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "draft",
+        "usage": {
+          "input_tokens": 959,
+          "total_tokens": 1098,
+          "output_tokens": 139,
+          "input_token_details": {
+            "cache_read": 512
+          },
+          "output_token_details": {}
+        },
+        "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+        "provider": "deepseek",
+        "elapsed_ms": 1321,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "validate",
+        "usage": null,
+        "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+        "provider": "deepseek",
+        "elapsed_ms": 4,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "execute",
+        "usage": null,
+        "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+        "provider": "deepseek",
+        "elapsed_ms": 8,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "summarize",
+        "usage": null,
+        "run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      }
+    ],
+    "error_code": null,
+    "provider": "deepseek",
+    "model_id": "deepseek-chat",
+    "model_calls": 2,
+    "repair_count": 0,
+    "active_ms": 2112,
+    "tokens": {
+      "input_tokens": 2394,
+      "total_tokens": 2585,
+      "output_tokens": 191
+    },
+    "clarifications": []
+  },
+  {
+    "run_id": "90419915c54841a9961b0a839f477bcc",
+    "question": "改成2026年8月",
+    "source_run_id": "fb692eba2bba4082a1c49a92d5fb467c",
+    "source_question": "那各渠道呢？",
+    "status": "succeeded",
+    "revision": 0,
+    "created_at": "2026-10-27T11:21:13.099177+00:00",
+    "updated_at": "2026-10-27T11:21:15.184723+00:00",
+    "clarification_expires_at": null,
+    "plan": {
+      "top_n": null,
+      "decision": "ready",
+      "end_date": "2026-09-01",
+      "group_by": [
+        "channel"
+      ],
+      "metric_id": "average_order_value",
+      "start_date": "2026-08-01",
+      "unsupported_reason": null,
+      "comparison_end_date": null,
+      "comparison_start_date": null,
+      "clarification_question": null
+    },
+    "report": {
+      "plan": {
+        "top_n": null,
+        "decision": "ready",
+        "end_date": "2026-09-01",
+        "group_by": [
+          "channel"
+        ],
+        "metric_id": "average_order_value",
+        "start_date": "2026-08-01",
+        "unsupported_reason": null,
+        "comparison_end_date": null,
+        "comparison_start_date": null,
+        "clarification_question": null
+      },
+      "chart": {
+        "type": "bar",
+        "unit": "fen_per_order",
+        "labels": [
+          "广告",
+          "站外",
+          "自然"
+        ],
+        "values": [
+          "18329.440233236152",
+          "17477.396610169492",
+          "18706.936102236422"
+        ]
+      },
+      "metric": {
+        "id": "average_order_value",
+        "unit": "fen_per_order",
+        "view": "analytics.sales_lines",
+        "grain": "聚合后指标",
+        "label": "客单价",
+        "definition": "同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价",
+        "dimensions": [
+          "day",
+          "channel",
+          "category"
+        ],
+        "time_field": "paid_at"
+      },
+      "tables": [
+        {
+          "rows": [
+            [
+              "广告",
+              "18329.440233236152"
+            ],
+            [
+              "站外",
+              "17477.396610169492"
+            ],
+            [
+              "自然",
+              "18706.936102236422"
+            ]
+          ],
+          "columns": [
+            "channel",
+            "value"
+          ],
+          "truncated": false,
+          "requested_top_n": null
+        }
+      ],
+      "comparison": [],
+      "explanation": "合成演示数据；客单价。口径：同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价。\n期间 [2026-08-01, 2026-09-01)，Asia/Shanghai，3 行。\n广告：183.29 元。\n站外：174.77 元。\n自然：187.07 元。"
+    },
+    "sqls": [
+      "SELECT channel, CAST(SUM(paid_cents) AS NUMERIC)/NULLIF(COUNT(DISTINCT order_id),0) AS value FROM analytics.sales_lines WHERE paid_at >= CAST('2026-08-01T00:00:00+08:00' AS TIMESTAMPTZ) AND paid_at < CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) GROUP BY channel ORDER BY channel ASC NULLS LAST"
+    ],
+    "events": [
+      {
+        "node": "plan",
+        "usage": {
+          "input_tokens": 1438,
+          "total_tokens": 1515,
+          "output_tokens": 77,
+          "input_token_details": {
+            "cache_read": 640
+          },
+          "output_token_details": {}
+        },
+        "run_id": "90419915c54841a9961b0a839f477bcc",
+        "provider": "deepseek",
+        "elapsed_ms": 978,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "context",
+        "usage": null,
+        "run_id": "90419915c54841a9961b0a839f477bcc",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "draft",
+        "usage": {
+          "input_tokens": 959,
+          "total_tokens": 1098,
+          "output_tokens": 139,
+          "input_token_details": {
+            "cache_read": 512
+          },
+          "output_token_details": {}
+        },
+        "run_id": "90419915c54841a9961b0a839f477bcc",
+        "provider": "deepseek",
+        "elapsed_ms": 995,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "validate",
+        "usage": null,
+        "run_id": "90419915c54841a9961b0a839f477bcc",
+        "provider": "deepseek",
+        "elapsed_ms": 4,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "execute",
+        "usage": null,
+        "run_id": "90419915c54841a9961b0a839f477bcc",
+        "provider": "deepseek",
+        "elapsed_ms": 10,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "summarize",
+        "usage": null,
+        "run_id": "90419915c54841a9961b0a839f477bcc",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      }
+    ],
+    "error_code": null,
+    "provider": "deepseek",
+    "model_id": "deepseek-chat",
+    "model_calls": 2,
+    "repair_count": 0,
+    "active_ms": 1987,
+    "tokens": {
+      "input_tokens": 2397,
+      "total_tokens": 2613,
+      "output_tokens": 216
+    },
+    "clarifications": []
+  },
+  {
+    "run_id": "5ca0b4fb6888449e949397d09db781fa",
+    "question": "那销售额呢？",
+    "source_run_id": "d60befa7489548bcb5436891f7396e88",
+    "source_question": "2026年9月整体客单价是多少？",
+    "status": "awaiting_clarification",
+    "revision": 0,
+    "created_at": "2026-10-27T11:21:15.286253+00:00",
+    "updated_at": "2026-10-27T11:21:16.126285+00:00",
+    "clarification_expires_at": "2026-10-28T11:21:16.126285+00:00",
+    "plan": {
+      "top_n": null,
+      "decision": "clarify",
+      "end_date": null,
+      "group_by": [],
+      "metric_id": null,
+      "start_date": null,
+      "unsupported_reason": null,
+      "comparison_end_date": null,
+      "comparison_start_date": null,
+      "clarification_question": "“销售额”指实付金额还是期间净收款？"
+    },
+    "report": null,
+    "sqls": [],
+    "events": [
+      {
+        "node": "plan",
+        "usage": {
+          "input_tokens": 1434,
+          "total_tokens": 1498,
+          "output_tokens": 64,
+          "input_token_details": {
+            "cache_read": 640
+          },
+          "output_token_details": {}
+        },
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 740,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "waiting",
+        "usage": null,
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      }
+    ],
+    "error_code": null,
+    "provider": "deepseek",
+    "model_id": "deepseek-chat",
+    "model_calls": 1,
+    "repair_count": 0,
+    "active_ms": 740,
+    "tokens": {
+      "input_tokens": 1434,
+      "total_tokens": 1498,
+      "output_tokens": 64
+    },
+    "clarifications": []
+  },
+  {
+    "run_id": "5ca0b4fb6888449e949397d09db781fa",
+    "question": "那销售额呢？",
+    "source_run_id": "d60befa7489548bcb5436891f7396e88",
+    "source_question": "2026年9月整体客单价是多少？",
+    "status": "succeeded",
+    "revision": 1,
+    "created_at": "2026-10-27T11:21:15.286253+00:00",
+    "updated_at": "2026-10-27T11:21:18.117432+00:00",
+    "clarification_expires_at": null,
+    "plan": {
+      "top_n": null,
+      "decision": "ready",
+      "end_date": "2026-10-01",
+      "group_by": [],
+      "metric_id": "period_net_receipt",
+      "start_date": "2026-09-01",
+      "unsupported_reason": null,
+      "comparison_end_date": null,
+      "comparison_start_date": null,
+      "clarification_question": null
+    },
+    "report": {
+      "plan": {
+        "top_n": null,
+        "decision": "ready",
+        "end_date": "2026-10-01",
+        "group_by": [],
+        "metric_id": "period_net_receipt",
+        "start_date": "2026-09-01",
+        "unsupported_reason": null,
+        "comparison_end_date": null,
+        "comparison_start_date": null,
+        "clarification_question": null
+      },
+      "chart": null,
+      "metric": {
+        "id": "period_net_receipt",
+        "unit": "fen",
+        "view": "analytics.cash_events",
+        "grain": "收退款事件",
+        "label": "期间净收款",
+        "definition": "同期实付金额减同期成功退款金额；本期退款可以来自上期订单，不是会计收入",
+        "dimensions": [
+          "day",
+          "channel",
+          "category"
+        ],
+        "time_field": "occurred_at"
+      },
+      "tables": [
+        {
+          "rows": [
+            [
+              "16633135"
+            ]
+          ],
+          "columns": [
+            "value"
+          ],
+          "truncated": false,
+          "requested_top_n": null
+        }
+      ],
+      "comparison": [],
+      "explanation": "合成演示数据；期间净收款。口径：同期实付金额减同期成功退款金额；本期退款可以来自上期订单，不是会计收入。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，1 行。\n总体：166331.35 元。"
+    },
+    "sqls": [
+      "SELECT COALESCE(SUM(amount_cents),0) AS value FROM analytics.cash_events WHERE occurred_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND occurred_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ)"
+    ],
+    "events": [
+      {
+        "node": "plan",
+        "usage": {
+          "input_tokens": 1434,
+          "total_tokens": 1498,
+          "output_tokens": 64,
+          "input_token_details": {
+            "cache_read": 640
+          },
+          "output_token_details": {}
+        },
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 740,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "waiting",
+        "usage": null,
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "clarify",
+        "usage": null,
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "plan",
+        "usage": {
+          "input_tokens": 1438,
+          "total_tokens": 1493,
+          "output_tokens": 55,
+          "input_token_details": {
+            "cache_read": 640
+          },
+          "output_token_details": {}
+        },
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 554,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "context",
+        "usage": null,
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "draft",
+        "usage": {
+          "input_tokens": 942,
+          "total_tokens": 1058,
+          "output_tokens": 116,
+          "input_token_details": {
+            "cache_read": 512
+          },
+          "output_token_details": {}
+        },
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 1244,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "validate",
+        "usage": null,
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 3,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "execute",
+        "usage": null,
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 8,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "summarize",
+        "usage": null,
+        "run_id": "5ca0b4fb6888449e949397d09db781fa",
+        "provider": "deepseek",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      }
+    ],
+    "error_code": null,
+    "provider": "deepseek",
+    "model_id": "deepseek-chat",
+    "model_calls": 3,
+    "repair_count": 0,
+    "active_ms": 2549,
+    "tokens": {
+      "input_tokens": 3814,
+      "total_tokens": 4049,
+      "output_tokens": 235
+    },
+    "clarifications": [
+      "期间净收款"
+    ]
+  }
+]

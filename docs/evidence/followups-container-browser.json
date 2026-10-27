@@ -1,0 +1,323 @@
+{
+  "provider": "offline",
+  "original": {
+    "run_id": "ca4bfb97866d4981994d835f656fc17d",
+    "question": "2026年9月整体客单价是多少？",
+    "source_run_id": null,
+    "source_question": null,
+    "status": "succeeded",
+    "revision": 0,
+    "created_at": "2026-10-27T11:31:25.974180+00:00",
+    "updated_at": "2026-10-27T11:31:26.054030+00:00",
+    "clarification_expires_at": null,
+    "plan": {
+      "top_n": null,
+      "decision": "ready",
+      "end_date": "2026-10-01",
+      "group_by": [],
+      "metric_id": "average_order_value",
+      "start_date": "2026-09-01",
+      "unsupported_reason": null,
+      "comparison_end_date": null,
+      "comparison_start_date": null,
+      "clarification_question": null
+    },
+    "report": {
+      "plan": {
+        "top_n": null,
+        "decision": "ready",
+        "end_date": "2026-10-01",
+        "group_by": [],
+        "metric_id": "average_order_value",
+        "start_date": "2026-09-01",
+        "unsupported_reason": null,
+        "comparison_end_date": null,
+        "comparison_start_date": null,
+        "clarification_question": null
+      },
+      "chart": null,
+      "metric": {
+        "id": "average_order_value",
+        "unit": "fen_per_order",
+        "view": "analytics.sales_lines",
+        "grain": "聚合后指标",
+        "label": "客单价",
+        "definition": "同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价",
+        "dimensions": [
+          "day",
+          "channel",
+          "category"
+        ],
+        "time_field": "paid_at"
+      },
+      "tables": [
+        {
+          "rows": [
+            [
+              "18727.500000000000"
+            ]
+          ],
+          "columns": [
+            "value"
+          ],
+          "truncated": false,
+          "requested_top_n": null
+        }
+      ],
+      "comparison": [],
+      "explanation": "合成演示数据；客单价。口径：同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，1 行。\n总体：187.28 元。"
+    },
+    "sqls": [
+      "SELECT CAST(SUM(paid_cents) AS NUMERIC) / NULLIF(COUNT(DISTINCT order_id), 0) AS value FROM analytics.sales_lines WHERE paid_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND paid_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ)"
+    ],
+    "events": [
+      {
+        "node": "plan",
+        "usage": null,
+        "run_id": "ca4bfb97866d4981994d835f656fc17d",
+        "provider": "offline",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "context",
+        "usage": null,
+        "run_id": "ca4bfb97866d4981994d835f656fc17d",
+        "provider": "offline",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "draft",
+        "usage": null,
+        "run_id": "ca4bfb97866d4981994d835f656fc17d",
+        "provider": "offline",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "validate",
+        "usage": null,
+        "run_id": "ca4bfb97866d4981994d835f656fc17d",
+        "provider": "offline",
+        "elapsed_ms": 3,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "execute",
+        "usage": null,
+        "run_id": "ca4bfb97866d4981994d835f656fc17d",
+        "provider": "offline",
+        "elapsed_ms": 4,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "summarize",
+        "usage": null,
+        "run_id": "ca4bfb97866d4981994d835f656fc17d",
+        "provider": "offline",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      }
+    ],
+    "error_code": null,
+    "provider": "offline",
+    "model_id": "offline-query-v1",
+    "model_calls": 2,
+    "repair_count": 0,
+    "active_ms": 7,
+    "tokens": null,
+    "clarifications": []
+  },
+  "result": {
+    "run_id": "5ac4824604e845098a5f17a264126091",
+    "question": "那各渠道呢？",
+    "source_run_id": "ca4bfb97866d4981994d835f656fc17d",
+    "source_question": "2026年9月整体客单价是多少？",
+    "status": "succeeded",
+    "revision": 0,
+    "created_at": "2026-10-27T11:31:26.840268+00:00",
+    "updated_at": "2026-10-27T11:31:26.923076+00:00",
+    "clarification_expires_at": null,
+    "plan": {
+      "top_n": null,
+      "decision": "ready",
+      "end_date": "2026-10-01",
+      "group_by": [
+        "channel"
+      ],
+      "metric_id": "average_order_value",
+      "start_date": "2026-09-01",
+      "unsupported_reason": null,
+      "comparison_end_date": null,
+      "comparison_start_date": null,
+      "clarification_question": null
+    },
+    "report": {
+      "plan": {
+        "top_n": null,
+        "decision": "ready",
+        "end_date": "2026-10-01",
+        "group_by": [
+          "channel"
+        ],
+        "metric_id": "average_order_value",
+        "start_date": "2026-09-01",
+        "unsupported_reason": null,
+        "comparison_end_date": null,
+        "comparison_start_date": null,
+        "clarification_question": null
+      },
+      "chart": {
+        "type": "bar",
+        "unit": "fen_per_order",
+        "labels": [
+          "广告",
+          "站外",
+          "自然"
+        ],
+        "values": [
+          "18072.316993464052",
+          "19014.479365079365",
+          "19068.328173374613"
+        ]
+      },
+      "metric": {
+        "id": "average_order_value",
+        "unit": "fen_per_order",
+        "view": "analytics.sales_lines",
+        "grain": "聚合后指标",
+        "label": "客单价",
+        "definition": "同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价",
+        "dimensions": [
+          "day",
+          "channel",
+          "category"
+        ],
+        "time_field": "paid_at"
+      },
+      "tables": [
+        {
+          "rows": [
+            [
+              "广告",
+              "18072.316993464052"
+            ],
+            [
+              "站外",
+              "19014.479365079365"
+            ],
+            [
+              "自然",
+              "19068.328173374613"
+            ]
+          ],
+          "columns": [
+            "channel",
+            "value"
+          ],
+          "truncated": false,
+          "requested_top_n": null
+        }
+      ],
+      "comparison": [],
+      "explanation": "合成演示数据；客单价。口径：同期实付金额除同期去重支付订单数；类别客单价用该类别明细金额和该类别去重订单数；零分母返回空值；总体不可平均类别客单价。\n期间 [2026-09-01, 2026-10-01)，Asia/Shanghai，3 行。\n广告：180.72 元。\n站外：190.14 元。\n自然：190.68 元。"
+    },
+    "sqls": [
+      "SELECT channel, CAST(SUM(paid_cents) AS NUMERIC) / NULLIF(COUNT(DISTINCT order_id), 0) AS value FROM analytics.sales_lines WHERE paid_at >= CAST('2026-09-01T00:00:00+08:00' AS TIMESTAMPTZ) AND paid_at < CAST('2026-10-01T00:00:00+08:00' AS TIMESTAMPTZ) GROUP BY channel ORDER BY channel ASC NULLS LAST"
+    ],
+    "events": [
+      {
+        "node": "plan",
+        "usage": null,
+        "run_id": "5ac4824604e845098a5f17a264126091",
+        "provider": "offline",
+        "elapsed_ms": 1,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "context",
+        "usage": null,
+        "run_id": "5ac4824604e845098a5f17a264126091",
+        "provider": "offline",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "draft",
+        "usage": null,
+        "run_id": "5ac4824604e845098a5f17a264126091",
+        "provider": "offline",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 1
+      },
+      {
+        "node": "validate",
+        "usage": null,
+        "run_id": "5ac4824604e845098a5f17a264126091",
+        "provider": "offline",
+        "elapsed_ms": 3,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "execute",
+        "usage": null,
+        "run_id": "5ac4824604e845098a5f17a264126091",
+        "provider": "offline",
+        "elapsed_ms": 5,
+        "error_code": null,
+        "model_calls": 0
+      },
+      {
+        "node": "summarize",
+        "usage": null,
+        "run_id": "5ac4824604e845098a5f17a264126091",
+        "provider": "offline",
+        "elapsed_ms": 0,
+        "error_code": null,
+        "model_calls": 0
+      }
+    ],
+    "error_code": null,
+    "provider": "offline",
+    "model_id": "offline-query-v1",
+    "model_calls": 2,
+    "repair_count": 0,
+    "active_ms": 9,
+    "tokens": null,
+    "clarifications": []
+  },
+  "checks": [
+    {
+      "name": "new-container-offline-provider",
+      "passed": true
+    },
+    {
+      "name": "bound-channel-followup",
+      "passed": true
+    },
+    {
+      "name": "refresh-and-source-result",
+      "passed": true
+    },
+    {
+      "name": "source-unchanged",
+      "passed": true
+    },
+    {
+      "name": "cross-session-rejected",
+      "passed": true
+    }
+  ],
+  "passed": 5
+}

@@ -1,0 +1,28 @@
+{
+  "started_at": "2026-10-27T11:21:08.078821+00:00",
+  "provider": "deepseek",
+  "source_commit": "3c323910f4c375b11c1d7bf84522d7775411a982",
+  "source_sha256": {
+    "backend/app/__init__.py": "0b0977e3600d7ff6801f2d217c49d136ebed508263d92a40be28fe78f1702768",
+    "backend/app/config.py": "ff8f0df770dbc3d6050da5d5f7b8af9175b8797e5a2f6e42d28e97103e54b25e",
+    "backend/app/main.py": "d246f40bc49ad4340fd01f5b096d8014fcf0eb6eb4f1ae62be53cebbb17e8973",
+    "backend/app/query_checkpoint.py": "4d4015a6a0fddf9bfb902c0252a3d7c4a3c24642a9b0e27af1c323224907ba64",
+    "backend/app/query_executor.py": "d1decd48ced309bf5bdd6b02d2ad43b061dc74fa7fc32ed625f828a01322621f",
+    "backend/app/query_followup.py": "065c680cc790607fcb7b11bdfaf931e6af0bf73bc6d73f723f89a3ba4905c458",
+    "backend/app/query_graph.py": "90ca4865d41012dafeeb3260e3ce96a9f108d50935fb8bab63113633d90adec4",
+    "backend/app/query_model.py": "305dc200bf3b95e0b8f2a30daef8bdd9e09d01ef78afd4a5d37f8e85335c79c4",
+    "backend/app/query_plan.py": "cd46225727375c4b2ff1d236c478f2b5f006587a87bd05556d8728c82e77a361",
+    "backend/app/workspace.py": "dfc28195bb338ecfef304fe7b106e397f6661fee293036f37d555b7126155aed",
+    "scripts/check_followups.py": "a7a22b77615f612b2cbea590f6b18469f131568f79e0512333aaa3f06e234142",
+    "docs/followups.md": "698ed3692d9d43dc9001097032af1d4f5102e7a49e2d07af1f11f96e4edb9353"
+  },
+  "note": "F01/F02/F03 registered before implementation; directed regression, not blind/full quality. HTTP/TestClient + real PostgreSQL; not a real-model browser test.",
+  "budget_before": {
+    "max_calls": 800,
+    "max_tokens": 2000000,
+    "calls": 790,
+    "known_tokens": 928503,
+    "unknown_tokens_reserved": 22236,
+    "inflight_reserved": 0
+  }
+}

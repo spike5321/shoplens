@@ -1,0 +1,23 @@
+{
+  "before": {
+    "runs_count": 12,
+    "runs_sha256": "ebfe41a0fcd6133a3b6f3ba7489ea322673bae1b82b114dccbff9281799336be",
+    "view_counts": {
+      "sales_lines": 5641,
+      "refund_events": 684,
+      "cash_events": 6325
+    }
+  },
+  "after": {
+    "runs_count": 12,
+    "runs_sha256": "ebfe41a0fcd6133a3b6f3ba7489ea322673bae1b82b114dccbff9281799336be",
+    "view_counts": {
+      "sales_lines": 5641,
+      "refund_events": 684,
+      "cash_events": 6325
+    }
+  },
+  "equal": true,
+  "init_rerun": false,
+  "volumes_removed": false
+}
