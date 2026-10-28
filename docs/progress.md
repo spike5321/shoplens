@@ -1295,3 +1295,10 @@ python scripts/verify.py --npm D:\Project_02\.local\tooling\node_modules\.bin\np
 - 主体提交 **f08f7a59f6141cf0a384eb3620cd25aa6231f045**（`feat: add persistent follow-up queries bound to successful results`）。
   `git push origin codex/production-baseline`成功（3c32391 → f08f7a5），`git ls-remote --heads origin codex/production-baseline`返回相同完整哈希，确认已推送到ShopLens远端分支。
 - 本阶段开发、验收、凭据检查和本地新镜像交付已完成；未合并main、未创建PR。本推送回执及计划勾选随后单独提交推送，主体代码不再修改。
+
+## 本地页面恢复（2026-10-28）
+
+- 用户报告5173网页打不开。`docker compose -p shoplens-stage6 --env-file .local/compose.env ps -a`首先返回Docker Linux Engine管道不存在；普通沙箱HTTP探测另受系统代理127.0.0.1:7897的套接字权限限制，未将该探测作为服务故障依据。
+- 获准运行`docker desktop start --timeout 45`后引擎启动，原db/api/web自动恢复且均healthy，web绑定127.0.0.1:5173，init仍为原记录Exited(0)。未执行compose up、重新初始化、镜像构建或数据重灌。
+- 本机Python urllib显式绕过代理探测：页面`/`与`/api/session`均HTTP 200；仅打印非敏感provider=offline、synthetic=true、reference_date=2026-09-30。未输出Cookie/CSRF，未调用真实模型。
+- 本次仅恢复现有运行环境，产品代码未改，未重复运行统一测试；原追问镜像、数据库、数据卷及历史保留。
